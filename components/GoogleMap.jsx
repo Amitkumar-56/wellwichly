@@ -4,9 +4,14 @@ import { useEffect, useRef, useState } from 'react';
 
 export default function GoogleMap() {
   const mapRef = useRef(null);
+  const mapInstanceRef = useRef(null);
   const [userLocation, setUserLocation] = useState(null);
   const [nearbyStores, setNearbyStores] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [isClient, setIsClient] = useState(false);
+  const [googleMapsLoaded, setGoogleMapsLoaded] = useState(false);
+  const [scriptLoading, setScriptLoading] = useState(false);
+  const scriptLoadedRef = useRef(false);
 
   // Franchise locations (sample data - replace with real data from API)
   const franchiseLocations = [
@@ -20,8 +25,15 @@ export default function GoogleMap() {
     { id: 8, name: 'Wellwichly Pune', lat: 18.5204, lng: 73.8567, address: '777 IT Park, Pune', phone: '+91 8881917644' },
   ];
 
+  // Check if we're on client side
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
+
   // Get user's current location
   useEffect(() => {
+    if (!isClient) return;
+    
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(
         (position) => {
@@ -48,7 +60,7 @@ export default function GoogleMap() {
       calculateNearbyStores(defaultLocation);
       setLoading(false);
     }
-  }, []);
+  }, [isClient]);
 
   // Calculate distance between two coordinates (Haversine formula)
   const calculateDistance = (lat1, lng1, lat2, lng2) => {
@@ -78,23 +90,63 @@ export default function GoogleMap() {
     setNearbyStores(nearby);
   };
 
-  // Initialize Google Maps
+  // Load Google Maps script
   useEffect(() => {
-    if (!userLocation || !mapRef.current) return;
+    if (!isClient || scriptLoadedRef.current) return;
 
-    // Load Google Maps script
-    if (!window.google) {
-      const script = document.createElement('script');
-      script.src = `https://maps.googleapis.com/maps/api/js?key=${process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || 'YOUR_API_KEY'}&libraries=places`;
-      script.async = true;
-      script.defer = true;
-      script.onload = initMap;
-      document.head.appendChild(script);
-    } else {
-      initMap();
+    // Check if Google Maps is already loaded
+    if (typeof window !== 'undefined' && window.google && window.google.maps) {
+      setGoogleMapsLoaded(true);
+      return;
     }
 
-    function initMap() {
+    // Check if script is already being loaded
+    const existingScript = document.querySelector('script[src*="maps.googleapis.com"]');
+    if (existingScript) {
+      existingScript.addEventListener('load', () => {
+        setGoogleMapsLoaded(true);
+      });
+      return;
+    }
+
+    // Load the script
+    setScriptLoading(true);
+    scriptLoadedRef.current = true;
+    
+    const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || 'YOUR_API_KEY';
+    if (apiKey === 'YOUR_API_KEY') {
+      console.warn('Google Maps API key not found. Please set NEXT_PUBLIC_GOOGLE_MAPS_API_KEY in your .env file');
+    }
+
+    const script = document.createElement('script');
+    script.src = `https://maps.googleapis.com/maps/api/js?key=${apiKey}&libraries=places`;
+    script.async = true;
+    script.defer = true;
+    
+    script.onload = () => {
+      setGoogleMapsLoaded(true);
+      setScriptLoading(false);
+    };
+    
+    script.onerror = () => {
+      console.error('Failed to load Google Maps script');
+      setScriptLoading(false);
+      scriptLoadedRef.current = false;
+    };
+    
+    document.head.appendChild(script);
+  }, [isClient]);
+
+  // Initialize Google Maps
+  useEffect(() => {
+    if (!isClient || !googleMapsLoaded || !userLocation || !mapRef.current || mapInstanceRef.current) return;
+
+    try {
+      if (!window.google || !window.google.maps) {
+        console.error('Google Maps API not available');
+        return;
+      }
+
       const map = new window.google.maps.Map(mapRef.current, {
         zoom: 6,
         center: userLocation,
@@ -107,6 +159,8 @@ export default function GoogleMap() {
           }
         ]
       });
+
+      mapInstanceRef.current = map;
 
       // Add user location marker (blue)
       if (userLocation) {
@@ -169,8 +223,22 @@ export default function GoogleMap() {
         bounds.extend(new window.google.maps.LatLng(userLocation.lat, userLocation.lng));
       }
       map.fitBounds(bounds);
+    } catch (error) {
+      console.error('Error initializing Google Maps:', error);
     }
-  }, [userLocation]);
+  }, [isClient, googleMapsLoaded, userLocation]);
+
+  if (!isClient) {
+    return (
+      <div className="w-full h-full bg-gradient-to-br from-blue-400 via-purple-500 to-pink-500 flex items-center justify-center relative">
+        <div className="absolute inset-0 bg-black/20"></div>
+        <div className="relative z-10 text-center text-white">
+          <div className="text-7xl mb-4">🗺️</div>
+          <p className="text-2xl font-bold mb-2">Loading Map...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="w-full">
@@ -184,13 +252,15 @@ export default function GoogleMap() {
         <div className="w-full h-[500px] rounded-2xl overflow-hidden shadow-xl border-4 border-white">
           <div ref={mapRef} className="w-full h-full">
             {/* Fallback if Google Maps not loaded */}
-            {!window.google && (
+            {(!googleMapsLoaded || scriptLoading) && (
               <div className="w-full h-full bg-gradient-to-br from-blue-400 via-purple-500 to-pink-500 flex items-center justify-center relative">
                 <div className="absolute inset-0 bg-black/20"></div>
                 <div className="relative z-10 text-center text-white">
                   <div className="text-7xl mb-4">🗺️</div>
                   <p className="text-2xl font-bold mb-2">Loading Map...</p>
-                  <p className="text-lg opacity-90">Please enable location access for best experience</p>
+                  <p className="text-lg opacity-90">
+                    {scriptLoading ? 'Loading Google Maps...' : 'Please enable location access for best experience'}
+                  </p>
                 </div>
               </div>
             )}
