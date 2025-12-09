@@ -5,9 +5,9 @@ import Link from 'next/link';
 
 export default function Logo({ size = 'default' }) {
   const sizes = {
-    small: 'h-12 w-12',
-    default: 'h-16 w-16 md:h-20 md:w-20',
-    large: 'h-24 w-24 md:h-32 md:w-32'
+    small: 'h-10 w-10',
+    default: 'h-14 w-14 md:h-16 md:w-16',
+    large: 'h-16 w-16 md:h-20 md:w-20'
   };
 
   return (

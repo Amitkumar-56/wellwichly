@@ -122,6 +122,60 @@ router.post('/', async (req, res) => {
   }
 });
 
+// Track order by phone or order ID (public)
+router.get('/track', async (req, res) => {
+  try {
+    const { phone, orderId } = req.query;
+    
+    if (!phone && !orderId) {
+      return res.status(400).json({ 
+        message: 'Please provide phone number or order ID',
+        error: 'Either phone or orderId query parameter is required'
+      });
+    }
+
+    let order;
+    if (orderId) {
+      // Track by order ID
+      if (!mongoose.Types.ObjectId.isValid(orderId)) {
+        return res.status(400).json({ message: 'Invalid order ID format' });
+      }
+      order = await Order.findById(orderId);
+    } else {
+      // Track by phone number - get most recent order
+      order = await Order.findOne({ phone: phone.trim() }).sort({ createdAt: -1 });
+    }
+
+    if (!order) {
+      return res.status(404).json({ 
+        message: 'Order not found',
+        error: 'No order found with the provided phone number or order ID'
+      });
+    }
+
+    // Return order details (excluding sensitive info if needed)
+    res.json({
+      message: 'Order found',
+      order: {
+        _id: order._id,
+        customerName: order.customerName,
+        phone: order.phone,
+        address: order.address,
+        items: order.items,
+        totalAmount: order.totalAmount,
+        paymentMethod: order.paymentMethod,
+        status: order.status,
+        orderDate: order.orderDate,
+        createdAt: order.createdAt,
+        updatedAt: order.updatedAt
+      }
+    });
+  } catch (error) {
+    console.error('Error tracking order:', error);
+    res.status(500).json({ message: 'Error tracking order', error: error.message });
+  }
+});
+
 // Get all orders (admin only)
 router.get('/', verifyToken, async (req, res) => {
   try {

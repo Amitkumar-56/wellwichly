@@ -131,8 +131,16 @@ function OrderContent() {
       console.log('Response data:', responseData);
 
       if (response.ok) {
-        alert('Order placed successfully! We will contact you soon.');
-        router.push('/');
+        const orderId = responseData.order?._id || responseData.orderId;
+        const orderMessage = orderId 
+          ? `Order placed successfully!\n\nOrder ID: ${orderId}\n\nYou can track your order using your phone number or order ID.\n\nWe will contact you soon for confirmation.`
+          : 'Order placed successfully! We will contact you soon.';
+        
+        if (confirm(orderMessage + '\n\nWould you like to track your order now?')) {
+          router.push(`/track-order?orderId=${orderId || ''}&phone=${encodeURIComponent(formData.phone)}`);
+        } else {
+          router.push('/');
+        }
       } else {
         let errorMessage = responseData.message || responseData.error || 'Error placing order. Please try again.';
         

@@ -18,10 +18,7 @@ export default function ImageSlider() {
       url: 'https://images.unsplash.com/photo-1509722747041-616f39b57569?w=1200&h=800&fit=crop',
       alt: 'Grilled Sandwich'
     },
-    {
-      url: 'https://images.unsplash.com/photo-1553909489-cd47ac38e1f8?w=1200&h=800&fit=crop',
-      alt: 'Veggie Sandwich'
-    },
+   
     {
       url: 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=1200&h=800&fit=crop',
       alt: 'Chicken Sandwich'
