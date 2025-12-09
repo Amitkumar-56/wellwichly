@@ -3,9 +3,9 @@
   "version": "1.0.0",
   "description": "Sandwich ordering website with admin panel",
   "scripts": {
-    "dev": "next dev -H 0.0.0.0",
+    "dev": "next dev -H 0.0.0.0 -p 5001",
     "build": "next build",
-    "start": "next start -H 0.0.0.0",
+    "start": "next start -H 0.0.0.0 -p 5000",
     "server": "node server/index.js",
     "dev:server": "nodemon server/index.js"
   },
