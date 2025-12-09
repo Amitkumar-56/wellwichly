@@ -12,7 +12,6 @@ export default function AdminLogin() {
   const [loginMethod, setLoginMethod] = useState('username'); // 'username' or 'email'
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
-  const [serverStatus, setServerStatus] = useState('checking');
   const router = useRouter();
 
   useEffect(() => {
@@ -21,22 +20,6 @@ export default function AdminLogin() {
     if (token) {
       router.push('/admin/dashboard');
     }
-
-    // Check server status
-    const checkServer = async () => {
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
-      try {
-        const response = await fetch(`${apiUrl}/api/health`);
-        if (response.ok) {
-          setServerStatus('online');
-        } else {
-          setServerStatus('error');
-        }
-      } catch (error) {
-        setServerStatus('offline');
-      }
-    };
-    checkServer();
   }, [router]);
 
   const handleSubmit = async (e) => {
@@ -47,11 +30,6 @@ export default function AdminLogin() {
     const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
 
     try {
-      // First check if server is running
-      const healthCheck = await fetch(`${apiUrl}/api/auth/login`, {
-        method: 'OPTIONS',
-      }).catch(() => null);
-
       const loginData = loginMethod === 'email' 
         ? { email, password }
         : { username, password };
@@ -98,36 +76,6 @@ export default function AdminLogin() {
         <div className="bg-white rounded-3xl shadow-2xl p-8 max-w-md w-full border-4 border-indigo-200">
           <h1 className="text-4xl font-black text-center mb-2 bg-gradient-to-r from-indigo-600 to-pink-600 bg-clip-text text-transparent">Admin Login</h1>
           <p className="text-center text-gray-600 mb-6">Wellwichly Admin Panel</p>
-          
-          {/* Server Status */}
-          <div className={`mb-4 p-3 rounded-xl border-2 ${
-            serverStatus === 'online' 
-              ? 'bg-green-50 border-green-300' 
-              : serverStatus === 'offline' 
-              ? 'bg-red-50 border-red-300' 
-              : 'bg-yellow-50 border-yellow-300'
-          }`}>
-            <p className="text-xs font-bold flex items-center gap-2">
-              {serverStatus === 'online' && <span>✅</span>}
-              {serverStatus === 'offline' && <span>❌</span>}
-              {serverStatus === 'checking' && <span>⏳</span>}
-              Server Status: 
-              <span className={
-                serverStatus === 'online' ? 'text-green-700' : 
-                serverStatus === 'offline' ? 'text-red-700' : 
-                'text-yellow-700'
-              }>
-                {serverStatus === 'online' ? 'Online' : 
-                 serverStatus === 'offline' ? 'Offline - Start backend server!' : 
-                 'Checking...'}
-              </span>
-            </p>
-            {serverStatus === 'offline' && (
-              <p className="text-xs text-red-700 mt-1">
-                Run: <code className="bg-red-100 px-1 rounded">npm run dev:server</code>
-              </p>
-            )}
-          </div>
           
           {error && (
             <div className="bg-red-100 border-2 border-red-400 text-red-800 px-4 py-3 rounded-xl mb-4">
@@ -186,10 +134,10 @@ export default function AdminLogin() {
             
             <button
               type="submit"
-              disabled={loading || serverStatus === 'offline'}
+              disabled={loading}
               className="w-full bg-gradient-to-r from-indigo-600 to-purple-600 text-white py-4 rounded-xl font-black text-lg hover:from-indigo-700 hover:to-purple-700 transition transform hover:scale-105 shadow-xl disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
             >
-              {loading ? 'Logging in...' : serverStatus === 'offline' ? 'Server Offline' : 'Login'}
+              {loading ? 'Logging in...' : 'Login'}
             </button>
           </form>
         </div>

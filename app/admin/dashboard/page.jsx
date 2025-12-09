@@ -345,7 +345,27 @@ export default function AdminDashboard() {
                   : 'text-gray-600 hover:text-orange-600'
               } transition`}
             >
-              📞 Contact & Franchise ({contacts.length})
+              📞 Messages ({contacts.length})
+            </button>
+            <button
+              onClick={() => setActiveTab('website')}
+              className={`px-6 py-3 font-bold text-lg ${
+                activeTab === 'website'
+                  ? 'border-b-4 border-orange-600 text-orange-600'
+                  : 'text-gray-600 hover:text-orange-600'
+              } transition`}
+            >
+              🎨 Logo & Images
+            </button>
+            <button
+              onClick={() => setActiveTab('payments')}
+              className={`px-6 py-3 font-bold text-lg ${
+                activeTab === 'payments'
+                  ? 'border-b-4 border-orange-600 text-orange-600'
+                  : 'text-gray-600 hover:text-orange-600'
+              } transition`}
+            >
+              💳 Payments
             </button>
             <button
               onClick={() => setActiveTab('services')}
@@ -674,7 +694,7 @@ export default function AdminDashboard() {
               <div className="flex justify-between items-center mb-6">
                 <div>
                   <h2 className="text-3xl font-black text-gray-800">Manage Website Content</h2>
-                  <p className="text-gray-600 mt-2">Edit text, images, logo, and all website content</p>
+                  <p className="text-gray-600 mt-2">Edit text, images, and content for each page separately</p>
                 </div>
                 <div className="flex gap-3">
                   <select
@@ -934,6 +954,218 @@ export default function AdminDashboard() {
                     ))}
                 </div>
               )}
+            </div>
+          )}
+
+          {/* Logo & Images Tab */}
+          {activeTab === 'website' && (
+            <div className="space-y-6">
+              <div className="bg-white rounded-xl shadow-2xl p-8 border-4 border-indigo-200">
+                <h2 className="text-3xl font-black mb-6 text-gray-800">Logo & Header Images Management</h2>
+                <p className="text-gray-600 mb-6">Manage your website logo and header images for different pages</p>
+
+                {/* Logo Management */}
+                <div className="mb-8 p-6 bg-gradient-to-br from-indigo-50 to-purple-50 rounded-xl border-4 border-indigo-200">
+                  <h3 className="text-2xl font-black mb-4 text-gray-800">🏷️ Website Logo</h3>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                      <label className="block text-lg font-bold mb-2 text-gray-800">Logo Image URL</label>
+                      <input
+                        type="url"
+                        placeholder="https://example.com/logo.png"
+                        className="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:outline-none focus:ring-4 focus:ring-indigo-300 text-gray-800 font-semibold mb-4"
+                        defaultValue={contents.find(c => c.key === 'logo-url')?.value || '/wellwichly.png'}
+                        onBlur={async (e) => {
+                          const logoContent = {
+                            key: 'logo-url',
+                            type: 'logo',
+                            value: e.target.value || '/wellwichly.png',
+                            label: 'Website Logo',
+                            description: 'Main website logo displayed in header',
+                            page: 'all'
+                          };
+                          try {
+                            await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'}/api/content`, {
+                              method: 'POST',
+                              headers: {
+                                'Content-Type': 'application/json',
+                                'Authorization': `Bearer ${token}`,
+                              },
+                              body: JSON.stringify(logoContent),
+                            });
+                            fetchData(token);
+                            alert('Logo updated successfully!');
+                          } catch (error) {
+                            console.error('Error updating logo:', error);
+                          }
+                        }}
+                      />
+                      <p className="text-sm text-gray-600">Upload logo to /public folder and use: /wellwichly.png</p>
+                    </div>
+                    <div>
+                      <label className="block text-lg font-bold mb-2 text-gray-800">Logo Preview</label>
+                      <div className="w-full h-32 bg-gray-100 rounded-xl border-4 border-gray-200 flex items-center justify-center overflow-hidden">
+                        <img
+                          src={contents.find(c => c.key === 'logo-url')?.value || '/wellwichly.png'}
+                          alt="Logo Preview"
+                          className="max-w-full max-h-full object-contain"
+                          onError={(e) => {
+                            e.target.src = 'https://via.placeholder.com/200x200?text=Logo+Preview';
+                          }}
+                        />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Header Images by Page */}
+                <div className="space-y-6">
+                  <h3 className="text-2xl font-black mb-4 text-gray-800">🖼️ Header Images by Page</h3>
+                  
+                  {['home', 'about', 'services', 'contact'].map((page) => (
+                    <div key={page} className="p-6 bg-white rounded-xl border-4 border-gray-200">
+                      <h4 className="text-xl font-black mb-4 text-gray-800 capitalize">{page} Page Header Image</h4>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                          <input
+                            type="url"
+                            placeholder={`https://example.com/${page}-header.jpg`}
+                            className="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:outline-none focus:ring-4 focus:ring-indigo-300 text-gray-800 font-semibold mb-4"
+                            defaultValue={contents.find(c => c.key === `${page}-header-image`)?.value || ''}
+                            onBlur={async (e) => {
+                              if (e.target.value) {
+                                const headerContent = {
+                                  key: `${page}-header-image`,
+                                  type: 'banner',
+                                  value: e.target.value,
+                                  label: `${page.charAt(0).toUpperCase() + page.slice(1)} Page Header`,
+                                  description: `Header image for ${page} page`,
+                                  page: page
+                                };
+                                try {
+                                  await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'}/api/content`, {
+                                    method: 'POST',
+                                    headers: {
+                                      'Content-Type': 'application/json',
+                                      'Authorization': `Bearer ${token}`,
+                                    },
+                                    body: JSON.stringify(headerContent),
+                                  });
+                                  fetchData(token);
+                                  alert(`${page} header image updated!`);
+                                } catch (error) {
+                                  console.error('Error updating header:', error);
+                                }
+                              }
+                            }}
+                          />
+                        </div>
+                        <div>
+                          <div className="w-full h-32 bg-gray-100 rounded-xl border-4 border-gray-200 overflow-hidden">
+                            <img
+                              src={contents.find(c => c.key === `${page}-header-image`)?.value || 'https://via.placeholder.com/800x300?text=Header+Preview'}
+                              alt={`${page} header preview`}
+                              className="w-full h-full object-cover"
+                              onError={(e) => {
+                                e.target.src = 'https://via.placeholder.com/800x300?text=No+Image';
+                              }}
+                            />
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Payments Tab */}
+          {activeTab === 'payments' && (
+            <div className="space-y-4">
+              <div className="bg-white rounded-xl shadow-2xl p-8 border-4 border-indigo-200">
+                <h2 className="text-3xl font-black mb-6 text-gray-800">💳 Payment Management</h2>
+                
+                {/* Payment Statistics */}
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                  <div className="bg-gradient-to-br from-green-50 to-emerald-50 p-6 rounded-xl border-4 border-green-200">
+                    <h3 className="text-lg font-bold text-gray-700 mb-2">Total Revenue</h3>
+                    <p className="text-3xl font-black text-green-600">
+                      ₹{orders
+                        .filter(o => o.status !== 'cancelled')
+                        .reduce((sum, o) => sum + (o.totalAmount || 0), 0)
+                        .toLocaleString('en-IN')}
+                    </p>
+                  </div>
+                  <div className="bg-gradient-to-br from-blue-50 to-indigo-50 p-6 rounded-xl border-4 border-blue-200">
+                    <h3 className="text-lg font-bold text-gray-700 mb-2">Online Payments</h3>
+                    <p className="text-3xl font-black text-blue-600">
+                      {orders.filter(o => o.paymentMethod === 'online' && o.status !== 'cancelled').length}
+                    </p>
+                  </div>
+                  <div className="bg-gradient-to-br from-orange-50 to-yellow-50 p-6 rounded-xl border-4 border-orange-200">
+                    <h3 className="text-lg font-bold text-gray-700 mb-2">Cash Payments</h3>
+                    <p className="text-3xl font-black text-orange-600">
+                      {orders.filter(o => o.paymentMethod === 'cash' && o.status !== 'cancelled').length}
+                    </p>
+                  </div>
+                </div>
+
+                {/* Payment Methods Summary */}
+                <div className="mb-8">
+                  <h3 className="text-2xl font-black mb-4 text-gray-800">Payment Methods</h3>
+                  <div className="space-y-4">
+                    {orders
+                      .filter(o => o.status !== 'cancelled')
+                      .map((order) => (
+                        <div key={order._id} className="bg-gray-50 p-4 rounded-xl border-2 border-gray-200">
+                          <div className="flex justify-between items-center">
+                            <div>
+                              <p className="font-bold text-gray-800">Order #{order._id.slice(-6)}</p>
+                              <p className="text-sm text-gray-600">{order.customerName} - ₹{order.totalAmount}</p>
+                            </div>
+                            <div className="text-right">
+                              <span className={`px-4 py-2 rounded-lg font-bold ${
+                                order.paymentMethod === 'online' 
+                                  ? 'bg-blue-100 text-blue-800' 
+                                  : 'bg-orange-100 text-orange-800'
+                              }`}>
+                                {order.paymentMethod === 'online' ? '💳 Online' : '💵 Cash'}
+                              </span>
+                              <p className="text-xs text-gray-500 mt-1">{new Date(order.createdAt).toLocaleDateString()}</p>
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    {orders.filter(o => o.status !== 'cancelled').length === 0 && (
+                      <p className="text-center text-gray-600 py-8">No payments yet</p>
+                    )}
+                  </div>
+                </div>
+
+                {/* Payment Settings */}
+                <div className="bg-gradient-to-br from-indigo-50 to-purple-50 p-6 rounded-xl border-4 border-indigo-200">
+                  <h3 className="text-xl font-black mb-4 text-gray-800">Payment Settings</h3>
+                  <div className="space-y-4">
+                    <div className="bg-white p-4 rounded-xl">
+                      <label className="block text-lg font-bold mb-2 text-gray-800">Payment Gateway Status</label>
+                      <select className="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:outline-none focus:ring-4 focus:ring-indigo-300 text-gray-800 font-semibold">
+                        <option>Online Payment Enabled</option>
+                        <option>Cash Only</option>
+                        <option>Both Enabled</option>
+                      </select>
+                    </div>
+                    <div className="bg-white p-4 rounded-xl">
+                      <label className="block text-lg font-bold mb-2 text-gray-800">Payment Instructions</label>
+                      <textarea
+                        className="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:outline-none focus:ring-4 focus:ring-indigo-300 text-gray-800 font-semibold"
+                        rows={3}
+                        placeholder="Add payment instructions for customers..."
+                      />
+                    </div>
+                  </div>
+                </div>
+              </div>
             </div>
           )}
         </div>

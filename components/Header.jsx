@@ -1,8 +1,8 @@
 'use client';
 
 import Link from 'next/link';
+import { useEffect, useRef, useState } from 'react';
 import Logo from './Logo';
-import { useState, useEffect, useRef } from 'react';
 
 export default function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -28,10 +28,14 @@ export default function Header() {
   }, [isMenuOpen]);
 
   return (
-    <header className="bg-gradient-to-r from-indigo-100 via-purple-50 to-pink-50 shadow-lg sticky top-0 z-50 backdrop-blur-lg border-b-2 border-indigo-200">
-      <nav className="container mx-auto px-4 py-4" ref={menuRef}>
+    <header className="relative bg-gradient-to-r from-indigo-100 via-purple-50 to-pink-50 shadow-lg sticky top-0 z-50 backdrop-blur-lg overflow-hidden">
+      {/* Background overlay for seamless blend */}
+      <div className="absolute inset-0 bg-gradient-to-r from-indigo-100 via-purple-50 to-pink-50"></div>
+      <nav className="container mx-auto px-4 py-3 relative z-10" ref={menuRef}>
         <div className="flex items-center justify-between">
-          <Logo />
+          <div className="flex items-center relative z-20">
+            <Logo />
+          </div>
           
           {/* Desktop Menu */}
           <div className="hidden md:flex items-center space-x-6">
@@ -90,4 +94,3 @@ export default function Header() {
     </header>
   );
 }
-

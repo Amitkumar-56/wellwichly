@@ -3,6 +3,7 @@ import Footer from '../components/Footer';
 import SocialSidebar from '../components/SocialSidebar';
 import GoogleMap from '../components/GoogleMap';
 import ImageSlider from '../components/ImageSlider';
+import TaglineRotator from '../components/TaglineRotator';
 import Link from 'next/link';
 
 export default function Home() {
@@ -24,7 +25,7 @@ export default function Home() {
           <h1 className="text-5xl md:text-9xl font-black text-white mb-4 tracking-tight drop-shadow-2xl font-['Poppins']">
             Wellwichly
           </h1>
-          <p className="text-2xl md:text-4xl text-white font-bold drop-shadow-lg font-['Poppins']">Fresh Sandwiches, Every Day</p>
+          <TaglineRotator />
         </div>
       </section>
 
@@ -91,21 +92,23 @@ export default function Home() {
         <div className="container mx-auto px-4">
           <div className="max-w-6xl mx-auto">
             <h2 className="text-3xl md:text-7xl font-black mb-8 text-gray-800 leading-tight text-center font-['Poppins']">
-              Fresh Ingredients,<br />
-              <span className="bg-gradient-to-r from-indigo-600 to-pink-600 bg-clip-text text-transparent">Smart System,</span><br />
-              <span className="bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">Affordable Outlet</span>
+              <span className="bg-gradient-to-r from-indigo-600 to-pink-600 bg-clip-text text-transparent">Wellwichly</span>
+              <br />
+              <span className="text-2xl md:text-4xl">— Eat Well, Feel Well</span>
             </h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-12 items-center mt-12">
               <div className="animate-slideUp">
+                <p className="text-lg md:text-xl text-gray-700 mb-6 leading-relaxed font-semibold">
+                  <span className="text-indigo-600 font-black">"Wellwichly — Crafted Fresh, Made Well."</span> This is our promise in every sandwich. 
+                  We start with fresh ingredients and perfect every bite with careful preparation.
+                </p>
                 <p className="text-lg md:text-xl text-gray-700 mb-6 leading-relaxed">
-                  Wellwichly was born with one bold mission — to transform the humble sandwich 
-                  into a national favorite. What began as a small venture is now a fast-growing 
-                  food brand reimagining street food with the perfect balance of tradition and technology.
+                  <span className="text-purple-600 font-black">"Where Wellness Meets Every Sandwich."</span> Our mission is to give you both healthy and tasty. 
+                  Every sandwich has goodness, every layer has freshness, and every moment brings happiness.
                 </p>
                 <p className="text-lg md:text-xl text-gray-700 mb-8 leading-relaxed">
-                  We are proud to bring uniformity, hygiene, and mass-scale efficiency to sandwiches, 
-                  ensuring every bite is fresh, delicious, and made with care. Our commitment is to 
-                  give everyone a taste of quality food at market rates, whenever and wherever they crave it.
+                  <span className="text-pink-600 font-black">"Made Well. Made Delicious."</span> This is our commitment — quality ingredients, 
+                  perfect preparation, and your satisfaction. Our dedication shows in every sandwich.
                 </p>
                 <Link 
                   href="/about" 
@@ -133,11 +136,11 @@ export default function Home() {
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-5 gap-6 mb-10">
             {[
-              { name: 'CHICKEN SANDWICH', image: 'https://images.unsplash.com/photo-1528735602780-2552fd46c7af?w=400&h=400&fit=crop', price: '₹80' },
-              { name: 'CHICKEN TIKKA', image: 'https://images.unsplash.com/photo-1534939561126-855b8675edd7?w=400&h=400&fit=crop', price: '₹120' },
-              { name: 'CHICKEN WRAP', image: 'https://images.unsplash.com/photo-1626700051175-6818013e1d4f?w=400&h=400&fit=crop', price: '₹100' },
-              { name: 'CHICKEN BURGER', image: 'https://images.unsplash.com/photo-1509722747041-616f39b57569?w=400&h=400&fit=crop', price: '₹90' },
-              { name: 'VEG SANDWICH', image: 'https://images.unsplash.com/photo-1553909489-cd47ac38e1f8?w=400&h=400&fit=crop', price: '₹60' },
+              { name: 'VEG GRILLED SANDWICH', image: '/Veg grilled sandwich.png', price: '₹60' },
+              { name: 'CHEESE CORN SANDWICH', image: '/Cheese corn sandwich.png', price: '₹80' },
+              { name: 'CHEESE PANEER SANDWICH', image: '/Cheese paneer sandwich.png', price: '₹90' },
+              { name: 'TANDOORI PANEER SANDWICH', image: '/tandoori paneer sandwich.png', price: '₹100' },
+              { name: 'ALOO GRILLED SANDWICH', image: '/Alloo grilled sandwich.png', price: '₹70' },
             ].map((item, index) => (
               <div key={index} className="bg-white rounded-3xl text-center hover:shadow-2xl transition-all duration-300 transform hover:scale-105 border-4 border-indigo-200 hover:border-indigo-500 overflow-hidden animate-slideUp" style={{ animationDelay: `${index * 0.1}s` }}>
                 <div className="w-full h-40 overflow-hidden">
@@ -157,6 +160,73 @@ export default function Home() {
             >
               View All Menu
             </Link>
+          </div>
+        </div>
+      </section>
+
+      {/* Taglines Section */}
+      <section className="py-16 md:py-20 bg-gradient-to-br from-indigo-50 via-purple-50 to-pink-50 animate-fadeIn">
+        <div className="container mx-auto px-4">
+          <div className="max-w-5xl mx-auto text-center">
+            <h2 className="text-3xl md:text-6xl font-black mb-6 text-gray-800 font-['Poppins']">
+              <span className="bg-gradient-to-r from-indigo-600 to-pink-600 bg-clip-text text-transparent">
+                Wellwichly
+              </span>
+              {' '}— More Than Just Sandwiches
+            </h2>
+            <p className="text-lg md:text-xl text-gray-700 mb-12 leading-relaxed font-semibold">
+              <span className="text-indigo-600 font-black text-2xl">"Wellwichly — Eat Well, Feel Well."</span>
+              <br /><br />
+              This is our core philosophy. We believe that good food keeps you healthy both physically and mentally. 
+              Our commitment in every sandwich is — fresh ingredients, perfect taste, and your wellness.
+            </p>
+            
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-12">
+              {/* Healthy & Tasty */}
+              <div className="bg-white rounded-3xl p-8 shadow-2xl border-4 border-green-200 hover:border-green-400 transition-all duration-300 transform hover:scale-105">
+                <div className="text-6xl mb-4">🥗</div>
+                <h3 className="text-2xl font-black text-gray-800 mb-4 font-['Poppins']">Healthy & Tasty</h3>
+                <div className="space-y-3 text-left">
+                  <p className="text-gray-700 font-semibold">"Crafted Fresh, Made Well."</p>
+                  <p className="text-gray-700 font-semibold">"Where Wellness Meets Every Sandwich."</p>
+                  <p className="text-gray-700 font-semibold">"Eat Well, Feel Well."</p>
+                  <p className="text-gray-700 font-semibold">"The Healthier Bite of Happiness."</p>
+                </div>
+              </div>
+
+              {/* Trendy & Modern */}
+              <div className="bg-white rounded-3xl p-8 shadow-2xl border-4 border-blue-200 hover:border-blue-400 transition-all duration-300 transform hover:scale-105">
+                <div className="text-6xl mb-4">⚡</div>
+                <h3 className="text-2xl font-black text-gray-800 mb-4 font-['Poppins']">Trendy & Modern</h3>
+                <div className="space-y-3 text-left">
+                  <p className="text-gray-700 font-semibold">"Fresh. Fast. Fantastic."</p>
+                  <p className="text-gray-700 font-semibold">"Goodness in Every Layer."</p>
+                  <p className="text-gray-700 font-semibold">"Bite Into Better."</p>
+                  <p className="text-gray-700 font-semibold">"Taste the Fresh Difference."</p>
+                </div>
+              </div>
+
+              {/* Fun & Memorable */}
+              <div className="bg-white rounded-3xl p-8 shadow-2xl border-4 border-pink-200 hover:border-pink-400 transition-all duration-300 transform hover:scale-105">
+                <div className="text-6xl mb-4">😊</div>
+                <h3 className="text-2xl font-black text-gray-800 mb-4 font-['Poppins']">Fun & Memorable</h3>
+                <div className="space-y-3 text-left">
+                  <p className="text-gray-700 font-semibold">"Wellness in Every Bite."</p>
+                  <p className="text-gray-700 font-semibold">"Your Daily Dose of Delicious."</p>
+                  <p className="text-gray-700 font-semibold">"Stacked with Smiles."</p>
+                  <p className="text-gray-700 font-semibold">"Fuel Your Day the Wellwichly Way."</p>
+                </div>
+              </div>
+            </div>
+
+            <div className="bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 rounded-3xl p-8 md:p-12 shadow-2xl text-white">
+              <p className="text-2xl md:text-4xl font-black mb-4 font-['Poppins']">
+                Made Well. Made Delicious.
+              </p>
+              <p className="text-lg md:text-xl opacity-90 font-['Poppins']">
+                Our commitment in every sandwich — quality, freshness, and your satisfaction.
+              </p>
+            </div>
           </div>
         </div>
       </section>

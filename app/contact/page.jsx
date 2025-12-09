@@ -3,6 +3,7 @@
 import Header from '../../components/Header';
 import Footer from '../../components/Footer';
 import GoogleMap from '../../components/GoogleMap';
+import InstagramQR from '../../components/InstagramQR';
 import { useState, useEffect, useRef } from 'react';
 
 export default function Contact() {
@@ -187,6 +188,11 @@ export default function Contact() {
                       Monday - Sunday<br />
                       9:00 AM - 10:00 PM
                     </p>
+                  </div>
+                  
+                  <div className="bg-white p-4 rounded-xl">
+                    <h3 className="font-bold mb-4 text-gray-800">📱 Follow Us on Instagram</h3>
+                    <InstagramQR />
                   </div>
                 </div>
               </div>

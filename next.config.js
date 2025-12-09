@@ -13,6 +13,8 @@ const nextConfig = {
       },
     ],
   },
+  // Allow cross-origin requests from network devices (for mobile testing)
+  allowedDevOrigins: ['192.168.31.254'],
 }
 
 module.exports = nextConfig

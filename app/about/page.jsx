@@ -21,21 +21,21 @@ export default function About() {
             <div className="max-w-4xl mx-auto">
               <h2 className="text-4xl md:text-5xl font-black mb-8 text-center bg-gradient-to-r from-indigo-600 to-pink-600 bg-clip-text text-transparent">Our Story</h2>
               <div className="prose prose-lg mx-auto text-gray-700">
-                <p className="mb-6 text-lg leading-relaxed">
-                  Wellwichly was founded with a simple mission: to serve the freshest, 
-                  most delicious sandwiches made with love and care at market rates. What started as a small 
-                  local business has grown into a beloved destination for sandwich lovers.
+                <p className="mb-6 text-lg leading-relaxed font-semibold">
+                  <span className="text-indigo-600 font-black text-xl">"Wellwichly — Crafted Fresh, Made Well."</span>
+                  <br /><br />
+                  Wellwichly started with a simple mission — to make fresh, healthy, and delicious sandwiches accessible to everyone. 
+                  We saw that people need quality food, but it shouldn't be expensive. This thinking became our foundation.
                 </p>
                 <p className="mb-6 text-lg leading-relaxed">
-                  Our journey began when we realized that people deserved better than the 
-                  average fast-food sandwich. We set out to create something special - 
-                  sandwiches that are not just food, but an experience. We work with franchise 
-                  partners to bring quality food to every corner.
+                  <span className="text-purple-600 font-black">"Where Wellness Meets Every Sandwich."</span> Our journey began with this philosophy. 
+                  We wanted wellness in every sandwich — fresh ingredients, balanced nutrition, and perfect taste. 
+                  Today, we're reaching quality food to every corner of the country with our franchise partners.
                 </p>
-                <p className="text-lg leading-relaxed">
-                  Today, we continue to uphold our commitment to quality, freshness, and 
-                  customer satisfaction. Every sandwich is prepared with the finest ingredients 
-                  at affordable market rates and served with a smile.
+                <p className="text-lg leading-relaxed font-semibold">
+                  <span className="text-pink-600 font-black">"Made Well. Made Delicious."</span> This is our commitment. 
+                  Every sandwich is carefully crafted — with finest ingredients, perfect preparation, and at affordable rates. 
+                  Our goal is to give you satisfaction in every bite.
                 </p>
               </div>
             </div>
@@ -48,18 +48,21 @@ export default function About() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-12 max-w-6xl mx-auto">
               <div className="bg-white p-8 rounded-3xl shadow-xl border-4 border-indigo-200">
                 <h2 className="text-3xl font-black mb-4 text-indigo-600">Our Mission</h2>
-                <p className="text-gray-700 text-lg leading-relaxed">
-                  To provide fresh, delicious, and affordable sandwiches to every corner of the country 
-                  through our franchise network. We aim to make quality food accessible to everyone while 
-                  maintaining the highest standards of hygiene and taste.
+                <p className="text-gray-700 text-lg leading-relaxed font-semibold">
+                  <span className="text-indigo-600 font-black">"Wellwichly — Eat Well, Feel Well."</span>
+                  <br /><br />
+                  Our mission is to reach fresh, healthy, and delicious sandwiches to everyone. 
+                  We want quality food to be accessible — through our franchise network in every city, 
+                  at affordable rates, and with the highest standards.
                 </p>
               </div>
               <div className="bg-white p-8 rounded-3xl shadow-xl border-4 border-indigo-200">
                 <h2 className="text-3xl font-black mb-4 text-indigo-600">Our Vision</h2>
-                <p className="text-gray-700 text-lg leading-relaxed">
-                  To become the most trusted and loved sandwich brand in India, known for our 
-                  commitment to quality, innovation, and customer satisfaction. We envision a future 
-                  where Wellwichly outlets are present in every city, serving fresh sandwiches to millions.
+                <p className="text-gray-700 text-lg leading-relaxed font-semibold">
+                  <span className="text-purple-600 font-black">"Wellwichly — The Healthier Bite of Happiness."</span>
+                  <br /><br />
+                  We want to become India's most trusted sandwich brand — where quality, innovation, and customer satisfaction are most important. 
+                  Our vision is to have Wellwichly outlets in every city, where millions of people can enjoy fresh sandwiches.
                 </p>
               </div>
             </div>
