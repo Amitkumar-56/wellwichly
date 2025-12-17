@@ -52,9 +52,6 @@ export default function Header() {
             <Link href="/franchising" className="text-gray-800 hover:text-indigo-600 font-bold transition transform hover:scale-110 text-lg py-2 px-3">Franchising</Link>
             <Link href="/contact" className="text-gray-800 hover:text-indigo-600 font-bold transition transform hover:scale-110 text-lg py-2 px-3">Contact Us</Link>
             <Link href="/track-order" className="text-gray-800 hover:text-indigo-600 font-bold transition transform hover:scale-110 text-lg py-2 px-3">Track Order</Link>
-            <Link href="/admin" className="bg-gradient-to-r from-indigo-600 to-purple-600 text-white px-6 py-2 rounded-full font-black hover:from-indigo-700 hover:to-purple-700 transition shadow-xl text-base">
-              Admin
-            </Link>
           </div>
 
           {/* Mobile Menu Button */}
@@ -98,7 +95,6 @@ export default function Header() {
               <Link href="/franchising" onClick={closeMenu} className="block py-4 px-6 text-gray-800 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg font-bold transition text-lg">Franchising</Link>
               <Link href="/contact" onClick={closeMenu} className="block py-4 px-6 text-gray-800 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg font-bold transition text-lg">Contact Us</Link>
               <Link href="/track-order" onClick={closeMenu} className="block py-4 px-6 text-gray-800 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg font-bold transition text-lg">Track Order</Link>
-              <Link href="/admin" onClick={closeMenu} className="block py-5 px-6 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-lg font-black text-center text-lg mt-4">Admin</Link>
             </div>
           </div>
         )}

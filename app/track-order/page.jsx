@@ -1,9 +1,11 @@
+
+// app/track-order/page.jsx
 'use client';
 
-import Header from '../../components/Header';
-import Footer from '../../components/Footer';
-import { useState } from 'react';
 import Link from 'next/link';
+import { useState } from 'react';
+import Footer from '../../components/Footer';
+import Header from '../../components/Header';
 
 export default function TrackOrder() {
   const [phone, setPhone] = useState('');
@@ -61,7 +63,7 @@ export default function TrackOrder() {
     }
 
     try {
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5001';
       const params = new URLSearchParams();
       if (phone.trim()) params.append('phone', phone.trim());
       if (orderId.trim()) params.append('orderId', orderId.trim());
@@ -220,6 +222,13 @@ export default function TrackOrder() {
               )}
 
               <div className="mt-6 text-center">
+                <a
+                  href={`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5001'}/api/orders/${order._id}/invoice`}
+                  target="_blank"
+                  className="inline-block bg-white text-indigo-600 px-8 py-3 rounded-xl font-black hover:bg-gray-100 transition shadow-xl border-2 border-indigo-300 mr-3"
+                >
+                  Download Invoice
+                </a>
                 <Link
                   href="/"
                   className="inline-block bg-gradient-to-r from-indigo-600 to-purple-600 text-white px-8 py-3 rounded-xl font-black hover:from-indigo-700 hover:to-purple-700 transition shadow-xl"

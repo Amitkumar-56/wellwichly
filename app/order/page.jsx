@@ -105,7 +105,7 @@ function OrderContent() {
     }
 
     try {
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5001';
       console.log('Sending order to:', `${apiUrl}/api/orders`);
       console.log('Order data:', JSON.stringify(orderData, null, 2));
 
@@ -167,7 +167,7 @@ function OrderContent() {
       
       let errorMsg = 'Network error occurred. ';
       if (error.message.includes('Failed to fetch') || error.message.includes('NetworkError')) {
-        errorMsg += 'Please check if backend server is running on http://localhost:5000';
+        errorMsg += 'Please check if backend server is running on http://localhost:5001';
       } else {
         errorMsg += error.message;
       }

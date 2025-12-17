@@ -26,6 +26,11 @@ export default function AdminDashboard() {
   const [editingContent, setEditingContent] = useState(null);
   const [contentFilter, setContentFilter] = useState('all');
   const [showMobileMenu, setShowMobileMenu] = useState(false);
+  const [serviceSearch, setServiceSearch] = useState('');
+  const [serviceSort, setServiceSort] = useState('recent');
+  const [toast, setToast] = useState(null);
+  const [users, setUsers] = useState([]);
+  const [editingUser, setEditingUser] = useState(null);
   const [stats, setStats] = useState({
     totalRevenue: 0,
     pendingOrders: 0,
@@ -50,11 +55,12 @@ export default function AdminDashboard() {
         'Authorization': `Bearer ${adminToken}`,
       };
 
-      const [ordersRes, contactsRes, servicesRes, contentsRes] = await Promise.all([
-        fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'}/api/orders`, { headers }),
-        fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'}/api/contacts`, { headers }),
-        fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'}/api/services`, { headers }),
-        fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'}/api/content`, { headers }),
+      const [ordersRes, contactsRes, servicesRes, contentsRes, usersRes] = await Promise.all([
+        fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5001'}/api/orders`, { headers }),
+        fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5001'}/api/contacts`, { headers }),
+        fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5001'}/api/services/all`, { headers }),
+        fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5001'}/api/content`, { headers }),
+        fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5001'}/api/auth/users`, { headers }),
       ]);
 
       if (ordersRes.ok) {
@@ -97,6 +103,10 @@ export default function AdminDashboard() {
         const contentsData = await contentsRes.json();
         setContents(contentsData);
       }
+      if (usersRes.ok) {
+        const usersData = await usersRes.json();
+        setUsers(usersData);
+      }
     } catch (error) {
       console.error('Error fetching data:', error);
     } finally {
@@ -109,7 +119,7 @@ export default function AdminDashboard() {
 
     try {
       const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'}/api/orders/${orderId}/status`,
+        `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5001'}/api/orders/${orderId}/status`,
         {
           method: 'PATCH',
           headers: {
@@ -133,7 +143,7 @@ export default function AdminDashboard() {
 
     try {
       const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'}/api/contacts/${contactId}/status`,
+        `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5001'}/api/contacts/${contactId}/status`,
         {
           method: 'PATCH',
           headers: {
@@ -170,6 +180,74 @@ export default function AdminDashboard() {
       replied: 'bg-green-100 text-green-800',
     };
     return colors[status] || 'bg-gray-100 text-gray-800';
+  };
+
+  const saveService = async () => {
+    if (!token || !editingService) return;
+    try {
+      if (!editingService.name || !editingService.category || !editingService.price || Number(editingService.price) <= 0) {
+        setToast({ type: 'error', message: 'Name, Category aur Price required hai' });
+        return;
+      }
+      const apiBase = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5001';
+      const method = editingService._id ? 'PUT' : 'POST';
+      const url = editingService._id
+        ? `${apiBase}/api/services/${editingService._id}`
+        : `${apiBase}/api/services`;
+      const response = await fetch(url, {
+        method,
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+        body: JSON.stringify(editingService),
+      });
+      if (response.ok) {
+        setEditingService(null);
+        fetchData(token);
+        setToast({ type: 'success', message: 'Item save ho gaya' });
+        setTimeout(() => setToast(null), 3000);
+      } else {
+        setToast({ type: 'error', message: 'Save mein error aayi' });
+        setTimeout(() => setToast(null), 3000);
+      }
+    } catch (error) {
+      console.error('Error saving service:', error);
+      setToast({ type: 'error', message: 'Network error, dobara koshish karein' });
+      setTimeout(() => setToast(null), 3000);
+    }
+  };
+
+  const saveContent = async () => {
+    if (!token || !editingContent) return;
+    try {
+      const apiBase = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5001';
+      const method = editingContent._id ? 'PUT' : 'POST';
+      const url = editingContent._id
+        ? `${apiBase}/api/content/${editingContent.key}`
+        : `${apiBase}/api/content`;
+      const response = await fetch(url, {
+        method,
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+        body: JSON.stringify(editingContent),
+      });
+      if (response.ok) {
+        setEditingContent(null);
+        fetchData(token);
+        setToast({ type: 'success', message: 'Content save ho gaya!' });
+        setTimeout(() => setToast(null), 3000);
+      } else {
+        setToast({ type: 'error', message: 'Content save fail ho gaya' });
+        setTimeout(() => setToast(null), 3000);
+      }
+    } catch (error) {
+      console.error('Error saving content:', error);
+      setToast({ type: 'error', message: 'Network error, dobara koshish karein' });
+      setTimeout(() => setToast(null), 3000);
+    }
   };
 
   // Mobile responsive tab navigation
@@ -249,12 +327,12 @@ export default function AdminDashboard() {
         <div className="container mx-auto px-4">
           {/* Desktop Header */}
           <div className="hidden lg:block mb-6">
-            <div className="flex justify-between items-center mb-6 bg-gradient-to-r from-indigo-50 to-purple-50 p-6 rounded-2xl border-4 border-indigo-200">
-              <div>
-                <h1 className="text-3xl lg:text-4xl font-black text-gray-800 mb-2">Wellwichly Admin Panel</h1>
-                <p className="text-gray-600">Manage orders, messages, and menu items</p>
-              </div>
-              <div className="flex gap-3">
+          <div className="flex justify-between items-center mb-6 bg-gradient-to-r from-indigo-50 to-purple-50 p-6 rounded-2xl border-4 border-indigo-200">
+            <div>
+              <h1 className="text-3xl lg:text-4xl font-black text-gray-800 mb-2">Wellwichly Admin Panel</h1>
+              <p className="text-gray-600">Manage orders, messages, and menu items</p>
+            </div>
+            <div className="flex gap-3">
                 <button
                   onClick={() => setShowPasswordChange(!showPasswordChange)}
                   className="bg-indigo-600 text-white px-4 lg:px-6 py-2 lg:py-3 rounded-full font-bold hover:bg-indigo-700 transition text-sm lg:text-base"
@@ -280,6 +358,7 @@ export default function AdminDashboard() {
               <TabButton name="payments" icon="💳" />
               <TabButton name="services" icon="🥪" count={services.length} />
               <TabButton name="content" icon="✏️" count={contents.length} />
+              <TabButton name="users" icon="👥" count={users.length} />
             </div>
           </div>
 
@@ -291,6 +370,7 @@ export default function AdminDashboard() {
             <TabButton name="payments" icon="💳" />
             <TabButton name="services" icon="🥪" count={services.length} />
             <TabButton name="content" icon="✏️" count={contents.length} />
+            <TabButton name="users" icon="👥" count={users.length} />
           </div>
 
           {/* Password Change Form */}
@@ -354,6 +434,21 @@ export default function AdminDashboard() {
                         <p className="text-sm text-gray-700 font-semibold">
                           💳 Payment: <span className="text-orange-600">{order.paymentMethod.toUpperCase()}</span>
                         </p>
+                        <a
+                          href={`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5001'}/api/orders/${order._id}/invoice`}
+                          target="_blank"
+                          download={`invoice-${String(order._id).slice(-8).toUpperCase()}.pdf`}
+                          className="px-3 py-2 bg-white border-2 border-orange-300 rounded-lg text-orange-700 font-bold hover:bg-orange-100 transition-all duration-300 transform hover:scale-105"
+                          onClick={(e) => {
+                            // Ensure download works even if target="_blank" interferes
+                            const link = e.currentTarget;
+                            setTimeout(() => {
+                              window.open(link.href, '_blank');
+                            }, 100);
+                          }}
+                        >
+                          📄 Download Invoice
+                        </a>
                         <select
                           value={order.status}
                           onChange={(e) => updateOrderStatus(order._id, e.target.value)}
@@ -433,12 +528,34 @@ export default function AdminDashboard() {
               <div className="space-y-6">
                 <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 mb-6">
                   <h2 className="text-2xl font-black text-gray-800">Manage Menu Items</h2>
-                  <button
-                    onClick={() => setEditingService({ name: '', description: '', price: 0, image: '', category: '', available: true })}
-                    className="bg-gradient-to-r from-indigo-600 to-purple-600 text-white px-6 py-3 rounded-xl font-bold hover:from-indigo-700 hover:to-purple-700 transition w-full lg:w-auto"
-                  >
-                    + Add New Item
-                  </button>
+                  <div className="flex flex-col sm:flex-row gap-3 w-full lg:w-auto">
+                    <div className="relative flex-1">
+                      <input
+                        type="text"
+                        value={serviceSearch}
+                        onChange={(e) => setServiceSearch(e.target.value)}
+                        placeholder="Search items..."
+                        className="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-300 text-gray-800"
+                      />
+                    </div>
+                    <select
+                      value={serviceSort}
+                      onChange={(e) => setServiceSort(e.target.value)}
+                      className="px-4 py-3 border-2 border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-300 text-gray-800"
+                    >
+                      <option value="recent">Recent</option>
+                      <option value="price_low">Price Low</option>
+                      <option value="price_high">Price High</option>
+                      <option value="name">Name</option>
+                      <option value="available">Available First</option>
+                    </select>
+                    <button
+                      onClick={() => setEditingService({ name: '', description: '', price: 0, image: '', category: '', available: true })}
+                      className="bg-gradient-to-r from-indigo-600 to-purple-600 text-white px-6 py-3 rounded-xl font-bold hover:from-indigo-700 hover:to-purple-700 transition w-full sm:w-auto"
+                    >
+                      + Add New Item
+                    </button>
+                  </div>
                 </div>
 
                 {editingService && (
@@ -455,6 +572,9 @@ export default function AdminDashboard() {
                           onChange={(e) => setEditingService({ ...editingService, name: e.target.value })}
                           className="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-300 text-gray-800"
                         />
+                        {(!editingService.name) && (
+                          <p className="text-xs text-red-600 mt-1">Name required hai</p>
+                        )}
                       </div>
                       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
                         <div>
@@ -465,6 +585,9 @@ export default function AdminDashboard() {
                             onChange={(e) => setEditingService({ ...editingService, price: parseFloat(e.target.value) })}
                             className="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-300 text-gray-800"
                           />
+                          {(!editingService.price || Number(editingService.price) <= 0) && (
+                            <p className="text-xs text-red-600 mt-1">Valid price daalein</p>
+                          )}
                         </div>
                         <div>
                           <label className="block text-sm font-bold mb-2 text-gray-800">Category</label>
@@ -477,18 +600,99 @@ export default function AdminDashboard() {
                             <option value="Veg">Veg</option>
                             <option value="Non-Veg">Non-Veg</option>
                           </select>
+                          {(!editingService.category) && (
+                            <p className="text-xs text-red-600 mt-1">Category select karein</p>
+                          )}
                         </div>
                       </div>
-                      {/* ... rest of service form ... */}
+                      <div>
+                        <label className="block text-sm font-bold mb-2 text-gray-800">Description</label>
+                        <textarea
+                          value={editingService.description || ''}
+                          onChange={(e) => setEditingService({ ...editingService, description: e.target.value })}
+                          className="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-300 text-gray-800"
+                          rows={3}
+                        />
+                      </div>
+                      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                        <div>
+                          <label className="block text-sm font-bold mb-2 text-gray-800">Image URL</label>
+                          <input
+                            type="url"
+                            value={editingService.image || ''}
+                            onChange={(e) => setEditingService({ ...editingService, image: e.target.value })}
+                            className="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-300 text-gray-800"
+                          />
+                        </div>
+                        <div className="flex items-center gap-3 mt-8 lg:mt-0">
+                          <input
+                            id="available"
+                            type="checkbox"
+                            checked={Boolean(editingService.available)}
+                            onChange={(e) => setEditingService({ ...editingService, available: e.target.checked })}
+                            className="h-5 w-5"
+                          />
+                          <label htmlFor="available" className="text-sm font-bold text-gray-800">Available</label>
+                        </div>
+                      </div>
+                      <div className="flex flex-col sm:flex-row gap-3 pt-2">
+                        <button
+                          onClick={saveService}
+                          className={`px-6 py-3 rounded-xl font-bold transition w-full sm:w-auto ${(!editingService.name || !editingService.category || !editingService.price || Number(editingService.price) <= 0) ? 'bg-gray-300 text-gray-600 cursor-not-allowed' : 'bg-indigo-600 text-white hover:bg-indigo-700'}`}
+                          disabled={!editingService.name || !editingService.category || !editingService.price || Number(editingService.price) <= 0}
+                        >
+                          Save
+                        </button>
+                        <button
+                          onClick={() => setEditingService(null)}
+                          className="bg-gray-200 text-gray-800 px-6 py-3 rounded-xl font-bold hover:bg-gray-300 transition w-full sm:w-auto"
+                        >
+                          Cancel
+                        </button>
+                      </div>
                     </div>
                   </div>
                 )}
 
-                {services.length === 0 ? (
+                {loading && (
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    {[...Array(6)].map((_, i) => (
+                      <div key={i} className="bg-gray-50 rounded-xl p-4 border border-gray-200 animate-pulse">
+                        <div className="w-full h-40 bg-gray-200 rounded-lg mb-3"></div>
+                        <div className="h-5 bg-gray-200 rounded w-2/3 mb-2"></div>
+                        <div className="h-4 bg-gray-200 rounded w-full mb-2"></div>
+                        <div className="h-4 bg-gray-200 rounded w-3/4 mb-4"></div>
+                        <div className="flex gap-2">
+                          <div className="h-8 bg-gray-200 rounded w-1/2"></div>
+                          <div className="h-8 bg-gray-200 rounded w-1/2"></div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                {services.length === 0 && !loading ? (
                   <p className="text-center text-gray-600 py-8">No services yet</p>
                 ) : (
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                    {services.map((service) => (
+                    {services
+                      .filter((s) => {
+                        const q = serviceSearch.trim().toLowerCase();
+                        if (!q) return true;
+                        return (
+                          (s.name || '').toLowerCase().includes(q) ||
+                          (s.description || '').toLowerCase().includes(q) ||
+                          (s.category || '').toLowerCase().includes(q)
+                        );
+                      })
+                      .sort((a, b) => {
+                        if (serviceSort === 'price_low') return (a.price || 0) - (b.price || 0);
+                        if (serviceSort === 'price_high') return (b.price || 0) - (a.price || 0);
+                        if (serviceSort === 'name') return (a.name || '').localeCompare(b.name || '');
+                        if (serviceSort === 'available') return (b.available === true) - (a.available === true);
+                        return 0;
+                      })
+                      .map((service) => (
                       <div key={service._id} className="bg-gray-50 rounded-xl p-4 border border-gray-200">
                         {service.image && (
                           <img src={service.image} alt={service.name} className="w-full h-40 object-cover rounded-lg mb-3" />
@@ -513,7 +717,7 @@ export default function AdminDashboard() {
                               if (confirm('Are you sure you want to delete this item?')) {
                                 try {
                                   const response = await fetch(
-                                    `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'}/api/services/${service._id}`,
+                                    `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5001'}/api/services/${service._id}`,
                                     {
                                       method: 'DELETE',
                                       headers: {
@@ -523,9 +727,16 @@ export default function AdminDashboard() {
                                   );
                                   if (response.ok) {
                                     fetchData(token);
+                                    setToast({ type: 'success', message: 'Item delete ho gaya' });
+                                    setTimeout(() => setToast(null), 3000);
+                                  } else {
+                                    setToast({ type: 'error', message: 'Delete fail ho gaya' });
+                                    setTimeout(() => setToast(null), 3000);
                                   }
                                 } catch (error) {
                                   console.error('Error deleting service:', error);
+                                  setToast({ type: 'error', message: 'Network error, delete nahi hua' });
+                                  setTimeout(() => setToast(null), 3000);
                                 }
                               }
                             }}
@@ -570,17 +781,119 @@ export default function AdminDashboard() {
                   </div>
                 </div>
 
+                {editingContent && (
+                  <div className="bg-gray-50 rounded-xl p-6 border-2 border-indigo-200 mb-6 animate-scaleIn">
+                    <div className="flex justify-between items-center mb-6">
+                      <h3 className="text-xl font-black text-gray-800">
+                        {editingContent._id ? 'Edit Content' : 'Add Content'}
+                      </h3>
+                      <button
+                        onClick={() => setEditingContent(null)}
+                        className="text-gray-500 hover:text-gray-700 text-2xl font-bold"
+                      >
+                        ×
+                      </button>
+                    </div>
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-sm font-bold mb-2 text-gray-800">Label</label>
+                        <input
+                          type="text"
+                          value={editingContent.label || ''}
+                          onChange={(e) => setEditingContent({ ...editingContent, label: e.target.value })}
+                          className="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-300 text-gray-800"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-bold mb-2 text-gray-800">Key</label>
+                        <input
+                          type="text"
+                          value={editingContent.key || ''}
+                          onChange={(e) => setEditingContent({ ...editingContent, key: e.target.value })}
+                          className="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-300 text-gray-800"
+                          disabled={Boolean(editingContent._id)}
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-bold mb-2 text-gray-800">Type</label>
+                        <select
+                          value={editingContent.type || 'text'}
+                          onChange={(e) => setEditingContent({ ...editingContent, type: e.target.value })}
+                          className="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-300 text-gray-800"
+                        >
+                          <option value="text">Text</option>
+                          <option value="image">Image</option>
+                          <option value="logo">Logo</option>
+                        </select>
+                      </div>
+                      <div>
+                        <label className="block text-sm font-bold mb-2 text-gray-800">Page</label>
+                        <select
+                          value={editingContent.page || 'home'}
+                          onChange={(e) => setEditingContent({ ...editingContent, page: e.target.value })}
+                          className="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-300 text-gray-800"
+                        >
+                          <option value="home">Home</option>
+                          <option value="about">About</option>
+                          <option value="services">Services</option>
+                          <option value="contact">Contact</option>
+                        </select>
+                      </div>
+                    </div>
+                    <div className="mt-4">
+                      <label className="block text-sm font-bold mb-2 text-gray-800">{editingContent.type === 'text' ? 'Text' : 'URL'}</label>
+                      {editingContent.type === 'text' ? (
+                        <textarea
+                          value={editingContent.value || ''}
+                          onChange={(e) => setEditingContent({ ...editingContent, value: e.target.value })}
+                          className="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-300 text-gray-800"
+                          rows={3}
+                        />
+                      ) : (
+                        <input
+                          type="url"
+                          value={editingContent.value || ''}
+                          onChange={(e) => setEditingContent({ ...editingContent, value: e.target.value })}
+                          className="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-300 text-gray-800"
+                        />
+                      )}
+                    </div>
+                    <div className="mt-4">
+                      <label className="block text-sm font-bold mb-2 text-gray-800">Description</label>
+                      <textarea
+                        value={editingContent.description || ''}
+                        onChange={(e) => setEditingContent({ ...editingContent, description: e.target.value })}
+                        className="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-300 text-gray-800"
+                        rows={2}
+                      />
+                    </div>
+                    <div className="flex flex-col sm:flex-row gap-3 pt-4">
+                      <button
+                        onClick={saveContent}
+                        className="bg-indigo-600 text-white px-6 py-3 rounded-xl font-bold hover:bg-indigo-700 transition-all duration-300 transform hover:scale-105 shadow-lg w-full sm:w-auto"
+                      >
+                        💾 Save Content
+                      </button>
+                      <button
+                        onClick={() => setEditingContent(null)}
+                        className="bg-gray-200 text-gray-800 px-6 py-3 rounded-xl font-bold hover:bg-gray-300 transition-all duration-300 w-full sm:w-auto"
+                      >
+                        Cancel
+                      </button>
+                    </div>
+                  </div>
+                )}
                 {/* Content items grid - responsive */}
                 {contents.length > 0 && (
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                     {contents
                       .filter(content => contentFilter === 'all' || content.page === contentFilter)
-                      .map((content) => (
-                        <div key={content._id} className="bg-gray-50 rounded-xl p-4 border border-gray-200">
+                      .map((content, index) => (
+                        <div key={content._id} className="bg-gray-50 rounded-xl p-4 border border-gray-200 hover:border-indigo-300 transition-all duration-300 transform hover:scale-105 animate-slideUp" style={{ animationDelay: `${index * 0.05}s` }}>
                           <div className="flex items-start justify-between mb-3">
                             <div className="flex-1">
                               <h3 className="font-bold text-gray-800 mb-1 line-clamp-1">{content.label}</h3>
-                              <div className="flex flex-wrap gap-1">
+                              <div className="flex flex-wrap gap-1 mb-2">
                                 <span className={`px-2 py-1 rounded-full text-xs font-bold ${
                                   content.type === 'text' ? 'bg-blue-100 text-blue-800' :
                                   content.type === 'image' ? 'bg-green-100 text-green-800' :
@@ -593,19 +906,210 @@ export default function AdminDashboard() {
                                   {content.page}
                                 </span>
                               </div>
+                              <p className="text-xs text-gray-600 line-clamp-2">{content.value || 'No value set'}</p>
                             </div>
                             <button
                               onClick={() => setEditingContent(content)}
-                              className="ml-2 text-indigo-600 hover:text-indigo-800"
+                              className="ml-2 text-indigo-600 hover:text-indigo-800 font-bold transition-all duration-300 transform hover:scale-110"
                             >
-                              Edit
+                              ✏️ Edit
                             </button>
                           </div>
-                          {/* ... rest of content card ... */}
                         </div>
                       ))}
                   </div>
                 )}
+                {contents.length === 0 && (
+                  <div className="text-center py-12 bg-gray-50 rounded-xl border-2 border-dashed border-gray-300">
+                    <p className="text-gray-600 text-lg">No content items yet. Add new content to get started!</p>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* Users Tab */}
+            {activeTab === 'users' && (
+              <div className="space-y-6">
+                <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 mb-6">
+                  <h2 className="text-2xl font-black text-gray-800">User Management</h2>
+                  <button
+                    onClick={() => setEditingUser({ username: '', email: '', password: '', role: 'subadmin' })}
+                    className="bg-gradient-to-r from-indigo-600 to-purple-600 text-white px-6 py-3 rounded-xl font-bold hover:from-indigo-700 hover:to-purple-700 transition w-full lg:w-auto"
+                  >
+                    + Add User
+                  </button>
+                </div>
+                {editingUser && (
+                  <div className="bg-gray-50 rounded-xl p-6 border-2 border-indigo-200 mb-6">
+                    <h3 className="text-xl font-black mb-6 text-gray-800">
+                      {editingUser._id ? 'Edit User' : 'Add New User'}
+                    </h3>
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-sm font-bold mb-2 text-gray-800">Username</label>
+                        <input
+                          type="text"
+                          value={editingUser.username || ''}
+                          onChange={(e) => setEditingUser({ ...editingUser, username: e.target.value })}
+                          className="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-300 text-gray-800"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-bold mb-2 text-gray-800">Email</label>
+                        <input
+                          type="email"
+                          value={editingUser.email || ''}
+                          onChange={(e) => setEditingUser({ ...editingUser, email: e.target.value })}
+                          className="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-300 text-gray-800"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-bold mb-2 text-gray-800">Password</label>
+                        <input
+                          type="password"
+                          value={editingUser.password || ''}
+                          onChange={(e) => setEditingUser({ ...editingUser, password: e.target.value })}
+                          className="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-300 text-gray-800"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-bold mb-2 text-gray-800">Role</label>
+                        <select
+                          value={editingUser.role || 'subadmin'}
+                          onChange={(e) => setEditingUser({ ...editingUser, role: e.target.value })}
+                          className="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-300 text-gray-800"
+                        >
+                          <option value="admin">Admin</option>
+                          <option value="subadmin">Subadmin</option>
+                        </select>
+                      </div>
+                    </div>
+                    <div className="flex flex-col sm:flex-row gap-3 pt-2">
+                      <button
+                        onClick={async () => {
+                          if (!token || !editingUser) return;
+                          if (!editingUser.username || !editingUser.password) {
+                            setToast({ type: 'error', message: 'Username aur Password required hai' });
+                            setTimeout(() => setToast(null), 3000);
+                            return;
+                          }
+                          try {
+                            const apiBase = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5001';
+                            const response = await fetch(`${apiBase}/api/auth/users`, {
+                              method: 'POST',
+                              headers: {
+                                'Content-Type': 'application/json',
+                                'Authorization': `Bearer ${token}`,
+                              },
+                              body: JSON.stringify(editingUser),
+                            });
+                            if (response.ok) {
+                              setEditingUser(null);
+                              fetchData(token);
+                              setToast({ type: 'success', message: 'User create ho gaya' });
+                              setTimeout(() => setToast(null), 3000);
+                            } else {
+                              const data = await response.json().catch(() => ({}));
+                              setToast({ type: 'error', message: data.message || 'User create fail' });
+                              setTimeout(() => setToast(null), 3000);
+                            }
+                          } catch (error) {
+                            console.error('Error creating user:', error);
+                            setToast({ type: 'error', message: 'Network error' });
+                            setTimeout(() => setToast(null), 3000);
+                          }
+                        }}
+                        className="bg-indigo-600 text-white px-6 py-3 rounded-xl font-bold hover:bg-indigo-700 transition w-full sm:w-auto"
+                      >
+                        Save
+                      </button>
+                      <button
+                        onClick={() => setEditingUser(null)}
+                        className="bg-gray-200 text-gray-800 px-6 py-3 rounded-xl font-bold hover:bg-gray-300 transition w-full sm:w-auto"
+                      >
+                        Cancel
+                      </button>
+                    </div>
+                  </div>
+                )}
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {users.map((u) => (
+                    <div key={u._id} className="bg-gray-50 rounded-xl p-4 border border-gray-200">
+                      <div className="flex items-start justify-between mb-3">
+                        <div>
+                          <h3 className="text-lg font-bold text-gray-800">{u.username}</h3>
+                          {u.email && <p className="text-sm text-gray-600">{u.email}</p>}
+                        </div>
+                        <span className={`px-2 py-1 rounded-full text-xs font-bold ${u.role === 'admin' ? 'bg-blue-100 text-blue-800' : 'bg-purple-100 text-purple-800'}`}>
+                          {u.role}
+                        </span>
+                      </div>
+                      <div className="flex gap-2">
+                        <button
+                          onClick={async () => {
+                            const nextRole = u.role === 'admin' ? 'subadmin' : 'admin';
+                            try {
+                              const apiBase = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5001';
+                              const response = await fetch(`${apiBase}/api/auth/users/${u._id}/role`, {
+                                method: 'PATCH',
+                                headers: {
+                                  'Content-Type': 'application/json',
+                                  'Authorization': `Bearer ${token}`,
+                                },
+                                body: JSON.stringify({ role: nextRole }),
+                              });
+                              if (response.ok) {
+                                fetchData(token);
+                                setToast({ type: 'success', message: 'Role update ho gaya' });
+                                setTimeout(() => setToast(null), 3000);
+                              } else {
+                                setToast({ type: 'error', message: 'Role update fail' });
+                                setTimeout(() => setToast(null), 3000);
+                              }
+                            } catch (error) {
+                              console.error('Error updating role:', error);
+                              setToast({ type: 'error', message: 'Network error' });
+                              setTimeout(() => setToast(null), 3000);
+                            }
+                          }}
+                          className="flex-1 bg-indigo-600 text-white px-3 py-2 rounded-lg font-bold hover:bg-indigo-700 transition text-sm"
+                        >
+                          Toggle Role
+                        </button>
+                        <button
+                          onClick={async () => {
+                            if (confirm('Delete user?')) {
+                              try {
+                                const apiBase = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5001';
+                                const response = await fetch(`${apiBase}/api/auth/users/${u._id}`, {
+                                  method: 'DELETE',
+                                  headers: {
+                                    'Authorization': `Bearer ${token}`,
+                                  },
+                                });
+                                if (response.ok) {
+                                  fetchData(token);
+                                  setToast({ type: 'success', message: 'User delete ho gaya' });
+                                  setTimeout(() => setToast(null), 3000);
+                                } else {
+                                  setToast({ type: 'error', message: 'Delete fail' });
+                                  setTimeout(() => setToast(null), 3000);
+                                }
+                              } catch (error) {
+                                console.error('Error deleting user:', error);
+                                setToast({ type: 'error', message: 'Network error' });
+                                setTimeout(() => setToast(null), 3000);
+                              }
+                            }
+                          }}
+                          className="flex-1 bg-red-600 text-white px-3 py-2 rounded-lg font-bold hover:bg-red-700 transition text-sm"
+                        >
+                          Delete
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
               </div>
             )}
 
@@ -728,21 +1232,26 @@ export default function AdminDashboard() {
       {/* Mobile Bottom Navigation */}
       <div className="lg:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 z-40">
         <div className="flex justify-around items-center h-16">
-          {['orders', 'contacts', 'services', 'content'].map((tab) => (
+          {[
+            { key: 'orders', icon: '📦', count: stats.pendingOrders },
+            { key: 'contacts', icon: '📞', count: stats.newMessages },
+            { key: 'services', icon: '🥪', count: stats.totalServices },
+            { key: 'content', icon: '✏️', count: contents.length },
+          ].map((t) => (
             <button
-              key={tab}
-              onClick={() => setActiveTab(tab)}
-              className={`flex flex-col items-center justify-center w-full h-full ${
-                activeTab === tab ? 'text-orange-600' : 'text-gray-500'
+              key={t.key}
+              onClick={() => setActiveTab(t.key)}
+              className={`relative flex flex-col items-center justify-center w-full h-full ${
+                activeTab === t.key ? 'text-orange-600' : 'text-gray-500'
               }`}
             >
-              <span className="text-xl">
-                {tab === 'orders' && '📦'}
-                {tab === 'contacts' && '📞'}
-                {tab === 'services' && '🥪'}
-                {tab === 'content' && '✏️'}
-              </span>
-              <span className="text-xs mt-1 font-semibold">{tab}</span>
+              <span className="text-xl">{t.icon}</span>
+              <span className="text-xs mt-1 font-semibold capitalize">{t.key}</span>
+              {t.count > 0 && (
+                <span className="absolute top-2 right-6 text-[10px] px-2 py-0.5 rounded-full bg-orange-600 text-white font-bold">
+                  {t.count}
+                </span>
+              )}
             </button>
           ))}
         </div>
@@ -750,6 +1259,16 @@ export default function AdminDashboard() {
 
       {/* Add padding to content for mobile bottom nav */}
       <div className="lg:hidden pb-16"></div>
+
+      {toast && (
+        <div className={`fixed top-4 right-4 z-50 px-4 py-3 rounded-xl shadow-lg font-semibold ${
+          toast.type === 'success' ? 'bg-green-600 text-white' :
+          toast.type === 'error' ? 'bg-red-600 text-white' :
+          'bg-gray-800 text-white'
+        }`}>
+          {toast.message}
+        </div>
+      )}
 
       <Footer />
     </div>

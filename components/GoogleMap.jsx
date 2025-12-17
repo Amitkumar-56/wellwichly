@@ -15,6 +15,7 @@ export default function GoogleMap() {
 
   // Franchise locations (sample data - replace with real data from API)
   const franchiseLocations = [
+    { id: 100, name: 'Corporate HQ', lat: 25.4358, lng: 81.8463, address: '212/184, Swaraj Bhawan, Uttar Pradesh 211003', phone: '+91 8881917644' },
     { id: 1, name: 'Wellwichly Patna', lat: 25.5941, lng: 85.1376, address: '123 Main Street, Patna', phone: '+91 8881917644' },
     { id: 2, name: 'Wellwichly Delhi', lat: 28.6139, lng: 77.2090, address: '456 Market Road, Delhi', phone: '+91 8881917644' },
     { id: 3, name: 'Wellwichly Mumbai', lat: 19.0760, lng: 72.8777, address: '789 Food Court, Mumbai', phone: '+91 8881917644' },

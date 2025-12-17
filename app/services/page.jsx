@@ -1,14 +1,15 @@
 'use client';
 
-import Header from '../../components/Header';
-import Footer from '../../components/Footer';
-import { useEffect, useState } from 'react';
 import Link from 'next/link';
+import { useEffect, useState } from 'react';
+import Footer from '../../components/Footer';
+import Header from '../../components/Header';
 
 export default function Services() {
   const [services, setServices] = useState([]);
   const [cart, setCart] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [quantities, setQuantities] = useState({});
 
   useEffect(() => {
     fetchServices();
@@ -16,7 +17,7 @@ export default function Services() {
 
   const fetchServices = async () => {
     try {
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'}/api/services`);
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5001'}/api/services`);
       
       if (!response.ok) {
         throw new Error('Failed to fetch services');
@@ -27,6 +28,9 @@ export default function Services() {
       // Ensure data is an array
       if (Array.isArray(data)) {
         setServices(data);
+        const initialQty = {};
+        data.forEach(s => { if (s._id) initialQty[s._id] = 1; });
+        setQuantities(initialQty);
       } else {
         throw new Error('Invalid data format');
       }
@@ -76,12 +80,20 @@ export default function Services() {
     }
   };
 
+  const increaseQty = (id) => {
+    setQuantities((q) => ({ ...q, [id]: Math.min((q[id] || 1) + 1, 20) }));
+  };
+  const decreaseQty = (id) => {
+    setQuantities((q) => ({ ...q, [id]: Math.max((q[id] || 1) - 1, 1) }));
+  };
   const addToCart = (service) => {
-    setCart([...cart, service]);
-    alert(`${service.name} added to cart!`);
+    const qty = quantities[service._id] || 1;
+    const items = Array(qty).fill(service);
+    setCart([...cart, ...items]);
+    alert(`${service.name} x${qty} added to cart!`);
   };
 
-  const totalAmount = cart.reduce((sum, item) => sum + item.price, 0);
+  const totalAmount = cart.reduce((sum, item) => sum + (item.price || 0), 0);
 
   return (
     <div className="min-h-screen flex flex-col bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50">
@@ -89,10 +101,10 @@ export default function Services() {
       
       <main className="flex-grow py-12">
         <div className="container mx-auto px-4">
-          <h1 className="text-5xl md:text-7xl font-black text-center mb-4 bg-gradient-to-r from-indigo-600 to-pink-600 bg-clip-text text-transparent">
+          <h1 className="text-5xl md:text-7xl font-black text-center mb-4 bg-gradient-to-r from-indigo-600 to-pink-600 bg-clip-text text-transparent animate-fadeIn">
             Our Menu
           </h1>
-          <p className="text-xl text-gray-600 text-center mb-12">Choose from our delicious sandwich collection</p>
+          <p className="text-xl text-gray-600 text-center mb-12 animate-fadeIn" style={{ animationDelay: '0.2s' }}>Choose from our delicious sandwich collection</p>
           
           {loading ? (
             <div className="text-center py-12">
@@ -102,8 +114,8 @@ export default function Services() {
             <>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-12">
                 {Array.isArray(services) && services.length > 0 ? (
-                  services.map((service) => (
-                    <div key={service._id} className="bg-white rounded-3xl shadow-2xl overflow-hidden hover:shadow-3xl transition transform hover:scale-105 border-4 border-indigo-200 hover:border-indigo-500">
+                  services.map((service, index) => (
+                    <div key={service._id} className="bg-white rounded-3xl shadow-2xl overflow-hidden hover:shadow-3xl transition-all duration-300 transform hover:scale-105 hover-lift border-4 border-indigo-200 hover:border-indigo-500 animate-slideUp" style={{ animationDelay: `${index * 0.1}s` }}>
                       <div className="relative w-full h-56 overflow-hidden group">
                         {service.image ? (
                           <img 
@@ -138,11 +150,28 @@ export default function Services() {
                       <div className="p-6">
                         <h3 className="text-2xl font-black mb-3 text-gray-800">{service.name}</h3>
                         <p className="text-gray-600 mb-6 text-lg">{service.description}</p>
-                        <div className="flex items-center justify-between">
+                        <div className="flex items-center justify-between gap-4">
                           <span className="text-3xl font-black bg-gradient-to-r from-indigo-600 to-pink-600 bg-clip-text text-transparent">₹{service.price}</span>
+                          <div className="flex items-center gap-2">
+                            <button
+                              onClick={() => decreaseQty(service._id)}
+                              className="px-3 py-2 rounded-lg border-2 border-indigo-200 text-indigo-700 font-bold hover:bg-indigo-50"
+                            >
+                              −
+                            </button>
+                            <span className="min-w-[2.5rem] text-center font-black text-gray-800">
+                              {quantities[service._id] || 1}
+                            </span>
+                            <button
+                              onClick={() => increaseQty(service._id)}
+                              className="px-3 py-2 rounded-lg border-2 border-indigo-200 text-indigo-700 font-bold hover:bg-indigo-50"
+                            >
+                              +
+                            </button>
+                          </div>
                           <button
                             onClick={() => addToCart(service)}
-                            className="bg-gradient-to-r from-indigo-600 to-purple-600 text-white px-6 py-3 rounded-xl font-black hover:from-indigo-700 hover:to-purple-700 transition shadow-lg"
+                            className="bg-gradient-to-r from-indigo-600 to-purple-600 text-white px-6 py-3 rounded-xl font-black hover:from-indigo-700 hover:to-purple-700 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105"
                           >
                             Add to Cart
                           </button>

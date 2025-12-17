@@ -1,12 +1,32 @@
-import Header from '../components/Header';
-import Footer from '../components/Footer';
-import SocialSidebar from '../components/SocialSidebar';
-import GoogleMap from '../components/GoogleMap';
-import ImageSlider from '../components/ImageSlider';
-import TaglineRotator from '../components/TaglineRotator';
+'use client'
 import Link from 'next/link';
+import { useEffect, useState } from 'react';
+import Footer from '../components/Footer';
+import GoogleMap from '../components/GoogleMap';
+import Header from '../components/Header';
+import ImageSlider from '../components/ImageSlider';
+import SocialSidebar from '../components/SocialSidebar';
+import TaglineRotator from '../components/TaglineRotator';
 
 export default function Home() {
+  const [contentMap, setContentMap] = useState({});
+  useEffect(() => {
+    const loadContent = async () => {
+      try {
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5001'}/api/content`);
+        if (res.ok) {
+          const items = await res.json();
+          const map = {};
+          items.forEach((c) => {
+            map[c.key] = c.value;
+          });
+          setContentMap(map);
+        }
+      } catch (e) {}
+    };
+    loadContent();
+  }, []);
+  const getContent = (key, fallback) => contentMap[key] || fallback;
   return (
     <div className="min-h-screen flex flex-col bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50">
       <Header />
@@ -23,7 +43,7 @@ export default function Home() {
         <div className="container mx-auto px-4 relative z-10 text-center">
           <div className="text-7xl md:text-9xl mb-6 animate-bounce drop-shadow-2xl">🥪</div>
           <h1 className="text-5xl md:text-9xl font-black text-white mb-4 tracking-tight drop-shadow-2xl font-['Poppins']">
-            Wellwichly
+            {getContent('home_welcome_title', 'Wellwichly')}
           </h1>
           <TaglineRotator />
         </div>
@@ -42,18 +62,18 @@ export default function Home() {
         
         <div className="container mx-auto px-4 relative z-10 text-center">
           <h2 className="text-4xl md:text-7xl font-black mb-4 text-gray-800 leading-tight font-['Poppins']">
-            Start your own
+            {getContent('home_cta_title_start', 'Start your own')}
           </h2>
           <div className="mb-6">
             <span className="text-5xl md:text-8xl font-black bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 bg-clip-text text-transparent font-['Poppins']">
-              Wellwichly
+              {getContent('home_cta_brand', 'Wellwichly')}
             </span>
           </div>
           <h2 className="text-4xl md:text-7xl font-black mb-8 text-gray-800 leading-tight font-['Poppins']">
-            Outlet today!
+            {getContent('home_cta_title_end', 'Outlet today!')}
           </h2>
           <p className="text-xl md:text-2xl text-gray-700 mb-10 font-medium max-w-3xl mx-auto font-['Poppins']">
-            Join our franchise network and serve delicious sandwiches to your community
+            {getContent('home_cta_subtext', 'Join our franchise network and serve delicious sandwiches to your community')}
           </p>
           <div className="flex justify-center">
             <Link 
@@ -132,7 +152,7 @@ export default function Home() {
       <section className="py-16 md:py-20 bg-gradient-to-br from-blue-50 to-purple-50 animate-fadeIn">
         <div className="container mx-auto px-4">
           <h2 className="text-3xl md:text-7xl font-black mb-12 text-gray-800 text-center font-['Poppins']">
-            Batawa Ka Khaiba??
+            {getContent('home_menu_title', 'Sandwich Menu — Kya Khaoge?')}
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-5 gap-6 mb-10">
             {[
@@ -146,12 +166,11 @@ export default function Home() {
                 <div className="w-full h-40 overflow-hidden">
                   <img src={item.image} alt={item.name} className="w-full h-full object-cover transition-all duration-500 transform hover:scale-110" loading="lazy" />
                 </div>
-                <div className="p-4">
+              <div className="p-4">
                 <h3 className="font-black text-base md:text-lg text-gray-800 mb-2 font-['Poppins']">{item.name}</h3>
-                <div className="text-xl md:text-2xl font-bold bg-gradient-to-r from-indigo-600 to-pink-600 bg-clip-text text-transparent font-['Poppins']">{item.price}</div>
-                </div>
               </div>
-            ))}
+            </div>
+          ))}
           </div>
           <div className="text-center">
             <Link 
@@ -257,7 +276,7 @@ export default function Home() {
       <section className="py-16 md:py-20 bg-gradient-to-br from-white to-indigo-50 animate-fadeIn">
         <div className="container mx-auto px-4">
           <h2 className="text-3xl md:text-7xl font-black mb-6 text-gray-800 text-center font-['Poppins']">
-            Find Our Stores
+            {getContent('home_find_stores_title', 'Find Our Stores')}
           </h2>
           <p className="text-lg md:text-xl text-gray-600 text-center mb-12 max-w-3xl mx-auto">
             Discover Wellwichly outlets near you. <span className="font-bold text-red-600">Red markers</span> show franchise locations, <span className="font-bold text-blue-600">Blue marker</span> shows your location.

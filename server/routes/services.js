@@ -93,6 +93,16 @@ router.get('/', async (req, res) => {
   }
 });
 
+// Get all services (admin - includes unavailable)
+router.get('/all', verifyToken, async (req, res) => {
+  try {
+    const services = await Service.find({}).sort({ createdAt: -1 });
+    res.json(services);
+  } catch (error) {
+    res.status(500).json({ message: 'Error fetching all services', error: error.message });
+  }
+});
+
 // Create service (admin only)
 router.post('/', verifyToken, async (req, res) => {
   try {

@@ -1,10 +1,9 @@
 'use client';
 
-import Header from '../../components/Header';
+import { useEffect, useRef, useState } from 'react';
 import Footer from '../../components/Footer';
 import GoogleMap from '../../components/GoogleMap';
-import InstagramQR from '../../components/InstagramQR';
-import { useState, useEffect, useRef } from 'react';
+import Header from '../../components/Header';
 
 export default function Contact() {
   const [formData, setFormData] = useState({
@@ -34,7 +33,7 @@ export default function Contact() {
     setSubmitted(false);
 
     try {
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'}/api/contacts`, {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5001'}/api/contacts`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -74,14 +73,14 @@ export default function Contact() {
       
       <main className="flex-grow py-12">
         <div className="container mx-auto px-4">
-          <h1 className="text-5xl md:text-7xl font-black text-center mb-4 bg-gradient-to-r from-indigo-600 to-pink-600 bg-clip-text text-transparent">
+          <h1 className="text-5xl md:text-7xl font-black text-center mb-4 bg-gradient-to-r from-indigo-600 to-pink-600 bg-clip-text text-transparent animate-fadeIn">
             Contact Us
           </h1>
-          <p className="text-xl text-gray-600 text-center mb-12">Get in touch with us. We'd love to hear from you!</p>
+          <p className="text-xl text-gray-600 text-center mb-12 animate-slideUp" style={{ animationDelay: '0.2s' }}>Get in touch with us. We'd love to hear from you!</p>
           
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-6xl mx-auto">
             {/* Contact Form */}
-            <div className="bg-white rounded-3xl shadow-2xl p-8 border-4 border-indigo-200">
+            <div className="bg-white rounded-3xl shadow-2xl p-8 border-4 border-indigo-200 hover:border-indigo-400 transition-all duration-300 animate-slideUp">
               <h2 className="text-3xl font-black mb-6 text-gray-800">Send us a Message</h2>
               
               {submitted && (
@@ -156,7 +155,7 @@ export default function Contact() {
 
             {/* Contact Info */}
             <div className="space-y-6">
-              <div className="bg-gradient-to-br from-indigo-50 to-purple-50 rounded-3xl shadow-2xl p-8 border-4 border-indigo-200">
+              <div className="bg-gradient-to-br from-indigo-50 to-purple-50 rounded-3xl shadow-2xl p-8 border-4 border-indigo-200 hover:border-indigo-400 transition-all duration-300 animate-slideUp" style={{ animationDelay: '0.2s' }}>
                 <h2 className="text-3xl font-black mb-6 text-gray-800">Get in Touch</h2>
                 <div className="space-y-6">
                   <div className="bg-white p-4 rounded-xl">
@@ -176,8 +175,9 @@ export default function Contact() {
                   <div className="bg-white p-4 rounded-xl">
                     <h3 className="font-bold mb-2 text-gray-800">📍 Address</h3>
                     <p className="text-gray-700 font-semibold">
-                      123 Food Street<br />
-                      City, State - 123456<br />
+                      Corporate Office:<br />
+                      212/184, Swaraj Bhawan<br />
+                      Uttar Pradesh - 211003<br />
                       India
                     </p>
                   </div>
@@ -190,15 +190,12 @@ export default function Contact() {
                     </p>
                   </div>
                   
-                  <div className="bg-white p-4 rounded-xl">
-                    <h3 className="font-bold mb-4 text-gray-800">📱 Follow Us on Instagram</h3>
-                    <InstagramQR />
-                  </div>
+                  
                 </div>
               </div>
 
               {/* Google Map Embed */}
-              <div className="bg-gradient-to-br from-indigo-50 to-purple-50 rounded-2xl shadow-xl p-6 border-4 border-indigo-200">
+              <div className="bg-gradient-to-br from-indigo-50 to-purple-50 rounded-2xl shadow-xl p-6 border-4 border-indigo-200 hover:border-indigo-400 transition-all duration-300 animate-slideUp" style={{ animationDelay: '0.4s' }}>
                 <h2 className="text-3xl font-black mb-4 text-gray-800">Find Our Stores</h2>
                 <p className="text-gray-600 mb-4 text-sm">
                   <span className="font-bold text-blue-600">Blue marker</span> = Your Location, <span className="font-bold text-red-600">Red markers</span> = Franchise Stores
