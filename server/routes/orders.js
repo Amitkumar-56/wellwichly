@@ -3,6 +3,8 @@ const router = express.Router();
 const mongoose = require('mongoose');
 const Order = require('../models/Order');
 const { verifyToken } = require('./auth');
+const { generateInvoicePdf } = require('../utils/invoice');
+const { sendOrderEmail } = require('../utils/mailer');
 
 // Create order (public)
 router.post('/', async (req, res) => {
@@ -93,7 +95,46 @@ router.post('/', async (req, res) => {
     console.log('📦 Order ID:', savedOrder._id);
     console.log('👤 Customer:', savedOrder.customerName);
     console.log('💰 Total:', savedOrder.totalAmount);
-    res.status(201).json({ message: 'Order placed successfully', order: savedOrder });
+    
+    let invoiceBuffer;
+    try {
+      invoiceBuffer = await generateInvoicePdf(savedOrder);
+    } catch (invErr) {
+      console.error('Invoice generation error:', invErr);
+    }
+    
+    let emailResult = { sent: false, reason: 'not_attempted' };
+    try {
+      const adminEmail = process.env.ADMIN_EMAIL || 'wellwichly@gmail.com';
+      const customerEmail = savedOrder.email;
+      const subject = `New Order ${String(savedOrder._id).slice(-6).toUpperCase()} — ${savedOrder.customerName}`;
+      const html = `
+        <h2>Order Received</h2>
+        <p>Name: ${savedOrder.customerName}</p>
+        <p>Phone: ${savedOrder.phone}</p>
+        <p>Address: ${savedOrder.address}</p>
+        <p>Total: ₹${Number(savedOrder.totalAmount).toFixed(2)}</p>
+        <p>Payment: ${savedOrder.paymentMethod}</p>
+      `;
+      const attachments = invoiceBuffer ? [{ filename: 'invoice.pdf', content: invoiceBuffer }] : [];
+      emailResult = await sendOrderEmail({
+        to: [adminEmail, customerEmail].filter(Boolean).join(','),
+        subject,
+        text: `Order placed. Total ₹${savedOrder.totalAmount}`,
+        html,
+        attachments,
+      });
+    } catch (mailErr) {
+      console.error('Email send error:', mailErr);
+      emailResult = { sent: false, reason: mailErr.message };
+    }
+    
+    res.status(201).json({ 
+      message: 'Order placed successfully', 
+      order: savedOrder,
+      invoiceUrl: `/api/orders/${savedOrder._id}/invoice`,
+      email: emailResult
+    });
   } catch (error) {
     console.error('Error creating order:', error);
     console.error('Error stack:', error.stack);
@@ -119,6 +160,26 @@ router.post('/', async (req, res) => {
       errorType: error.name,
       details: process.env.NODE_ENV === 'development' ? error.stack : undefined
     });
+  }
+});
+
+// Download invoice (public)
+router.get('/:id/invoice', async (req, res) => {
+  try {
+    if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
+      return res.status(400).json({ message: 'Invalid order ID format' });
+    }
+    const order = await Order.findById(req.params.id);
+    if (!order) {
+      return res.status(404).json({ message: 'Order not found' });
+    }
+    const pdf = await generateInvoicePdf(order);
+    res.setHeader('Content-Type', 'application/pdf');
+    res.setHeader('Content-Disposition', `inline; filename=invoice-${String(order._id).slice(-6)}.pdf`);
+    res.send(pdf);
+  } catch (err) {
+    console.error('Error generating invoice:', err);
+    res.status(500).json({ message: 'Error generating invoice', error: err.message });
   }
 });
 
@@ -211,6 +272,23 @@ router.patch('/:id/status', verifyToken, async (req, res) => {
     if (!order) {
       return res.status(404).json({ message: 'Order not found' });
     }
+    
+    try {
+      if (['confirmed', 'delivered', 'out_for_delivery', 'preparing'].includes(status)) {
+        const subject = `Order ${String(order._id).slice(-6).toUpperCase()} — ${status.toUpperCase()}`;
+        const html = `
+          <h2>Your order status updated: ${status}</h2>
+          <p>Total: ₹${Number(order.totalAmount).toFixed(2)}</p>
+          <p>Download Invoice: <a href="${process.env.PUBLIC_API_URL || ''}/api/orders/${order._id}/invoice">Click here</a></p>
+        `;
+        const attachments = [];
+        const emailTo = [order.email, process.env.ADMIN_EMAIL || 'wellwichly@gmail.com'].filter(Boolean).join(',');
+        await sendOrderEmail({ to: emailTo, subject, text: `Status: ${status}`, html, attachments });
+      }
+    } catch (mailErr) {
+      console.error('Status email error:', mailErr);
+    }
+    
     res.json({ message: 'Order status updated', order });
   } catch (error) {
     res.status(500).json({ message: 'Error updating order', error: error.message });

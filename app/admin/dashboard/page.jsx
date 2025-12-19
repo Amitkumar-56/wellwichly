@@ -56,11 +56,11 @@ export default function AdminDashboard() {
       };
 
       const [ordersRes, contactsRes, servicesRes, contentsRes, usersRes] = await Promise.all([
-        fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5001'}/api/orders`, { headers }),
-        fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5001'}/api/contacts`, { headers }),
-        fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5001'}/api/services/all`, { headers }),
-        fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5001'}/api/content`, { headers }),
-        fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5001'}/api/auth/users`, { headers }),
+        fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'}/api/orders`, { headers }),
+        fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'}/api/contacts`, { headers }),
+        fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'}/api/services/all`, { headers }),
+        fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'}/api/content`, { headers }),
+        fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'}/api/auth/users`, { headers }),
       ]);
 
       if (ordersRes.ok) {
@@ -250,6 +250,35 @@ export default function AdminDashboard() {
     }
   };
 
+  const saveContentItem = async (item) => {
+    if (!token || !item) return;
+    try {
+      const apiBase = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5001';
+      const method = item._id ? 'PUT' : 'POST';
+      const url = item._id ? `${apiBase}/api/content/${item.key}` : `${apiBase}/api/content`;
+      const response = await fetch(url, {
+        method,
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+        body: JSON.stringify(item),
+      });
+      if (response.ok) {
+        fetchData(token);
+        setToast({ type: 'success', message: 'Image save ho gaya!' });
+        setTimeout(() => setToast(null), 3000);
+      } else {
+        setToast({ type: 'error', message: 'Image save fail ho gaya' });
+        setTimeout(() => setToast(null), 3000);
+      }
+    } catch (error) {
+      console.error('Error saving content item:', error);
+      setToast({ type: 'error', message: 'Network error, dobara koshish karein' });
+      setTimeout(() => setToast(null), 3000);
+    }
+  };
+
   // Mobile responsive tab navigation
   const TabButton = ({ name, icon, count }) => (
     <button
@@ -327,7 +356,7 @@ export default function AdminDashboard() {
         <div className="container mx-auto px-4">
           {/* Desktop Header */}
           <div className="hidden lg:block mb-6">
-          <div className="flex justify-between items-center mb-6 bg-gradient-to-r from-indigo-50 to-purple-50 p-6 rounded-2xl border-4 border-indigo-200">
+          <div className="flex justify-between items-center mb-6 bg-white/70 backdrop-blur-md p-6 rounded-2xl border-2 border-indigo-200 shadow-xl">
             <div>
               <h1 className="text-3xl lg:text-4xl font-black text-gray-800 mb-2">Wellwichly Admin Panel</h1>
               <p className="text-gray-600">Manage orders, messages, and menu items</p>
@@ -335,13 +364,13 @@ export default function AdminDashboard() {
             <div className="flex gap-3">
                 <button
                   onClick={() => setShowPasswordChange(!showPasswordChange)}
-                  className="bg-indigo-600 text-white px-4 lg:px-6 py-2 lg:py-3 rounded-full font-bold hover:bg-indigo-700 transition text-sm lg:text-base"
+                  className="bg-gradient-to-r from-indigo-600 to-purple-600 text-white px-4 lg:px-6 py-2 lg:py-3 rounded-full font-bold hover:from-indigo-700 hover:to-purple-700 transition text-sm lg:text-base shadow-lg"
                 >
                   🔐 Change Password
                 </button>
                 <button
                   onClick={handleLogout}
-                  className="bg-red-600 text-white px-4 lg:px-6 py-2 lg:py-3 rounded-full font-bold hover:bg-red-700 transition text-sm lg:text-base"
+                  className="bg-gradient-to-r from-red-600 to-orange-600 text-white px-4 lg:px-6 py-2 lg:py-3 rounded-full font-bold hover:from-red-700 hover:to-orange-700 transition text-sm lg:text-base shadow-lg"
                 >
                   Logout
                 </button>
@@ -1165,6 +1194,49 @@ export default function AdminDashboard() {
                       </div>
                     </div>
                   ))}
+                </div>
+
+                {/* Home Slider Images */}
+                <div className="bg-gray-50 rounded-xl p-4 border border-gray-200">
+                  <h3 className="text-xl font-bold mb-4 text-gray-800">🏞️ Home Slider Images</h3>
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    {[1,2,3,4,5].map((i) => {
+                      const key = `home-slider-${i}`;
+                      const existing = contents.find(c => c.key === key);
+                      return (
+                        <div key={key} className="bg-white rounded-xl p-4 border-2 border-indigo-100">
+                          <label className="block text-sm font-bold mb-2 text-gray-800">Image {i} URL</label>
+                          <input
+                            type="url"
+                            defaultValue={existing?.value || ''}
+                            onBlur={(e) => {
+                              const url = e.target.value.trim();
+                              if (!url) return;
+                              const item = {
+                                key,
+                                type: 'image',
+                                value: url,
+                                label: `Home Slider Image ${i}`,
+                                description: 'Homepage hero slider image',
+                                page: 'home',
+                              };
+                              saveContentItem(item);
+                            }}
+                            placeholder="https://example.com/slider.jpg"
+                            className="w-full px-3 py-2 border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-300 text-sm"
+                          />
+                          <div className="w-full h-24 mt-3 bg-gray-50 rounded-lg border border-gray-200 overflow-hidden">
+                            <img
+                              src={existing?.value || 'https://via.placeholder.com/400x150'}
+                              alt={`Slider ${i}`}
+                              className="w-full h-full object-cover"
+                            />
+                          </div>
+                          <p className="text-xs text-gray-500 mt-2">Paste image URL and unfocus to save.</p>
+                        </div>
+                      );
+                    })}
+                  </div>
                 </div>
               </div>
             )}

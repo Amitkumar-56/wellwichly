@@ -1,11 +1,10 @@
 'use client';
 
-import Header from '../../components/Header';
-import Footer from '../../components/Footer';
-import { useSearchParams } from 'next/navigation';
-import { useState, useEffect, Suspense } from 'react';
-import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import { useRouter, useSearchParams } from 'next/navigation';
+import { Suspense, useEffect, useState } from 'react';
+import Footer from '../../components/Footer';
+import Header from '../../components/Header';
 
 function OrderContent() {
   const searchParams = useSearchParams();
@@ -132,13 +131,17 @@ function OrderContent() {
 
       if (response.ok) {
         const orderId = responseData.order?._id || responseData.orderId;
+        const invoiceUrl = responseData.invoiceUrl
+          ? `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5001'}${responseData.invoiceUrl}`
+          : '';
         const orderMessage = orderId 
-          ? `Order placed successfully!\n\nOrder ID: ${orderId}\n\nYou can track your order using your phone number or order ID.\n\nWe will contact you soon for confirmation.`
+          ? `Order placed successfully!\n\nOrder ID: ${orderId}\n\nYou can track your order using your phone number or order ID.\n\nInvoice: ${invoiceUrl || 'Will be available on Track Order page.'}\n\nWe will contact you soon for confirmation.`
           : 'Order placed successfully! We will contact you soon.';
         
         if (confirm(orderMessage + '\n\nWould you like to track your order now?')) {
           router.push(`/track-order?orderId=${orderId || ''}&phone=${encodeURIComponent(formData.phone)}`);
         } else {
+          if (invoiceUrl) window.open(invoiceUrl, '_blank');
           router.push('/');
         }
       } else {

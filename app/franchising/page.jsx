@@ -1,9 +1,9 @@
 'use client';
 
-import Header from '../../components/Header';
+import { useEffect, useRef, useState } from 'react';
 import Footer from '../../components/Footer';
+import Header from '../../components/Header';
 import SocialSidebar from '../../components/SocialSidebar';
-import { useState, useEffect, useRef } from 'react';
 
 export default function Franchising() {
   const [formData, setFormData] = useState({

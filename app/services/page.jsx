@@ -107,21 +107,33 @@ export default function Services() {
           <p className="text-xl text-gray-600 text-center mb-12 animate-fadeIn" style={{ animationDelay: '0.2s' }}>Choose from our delicious sandwich collection</p>
           
           {loading ? (
-            <div className="text-center py-12">
-              <p className="text-gray-600">Loading menu...</p>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 mb-12">
+              {Array.from({ length: 6 }).map((_, i) => (
+                <div key={i} className="bg-white rounded-3xl shadow-2xl overflow-hidden border-2 border-indigo-100">
+                  <div className="h-64 animate-shimmer" />
+                  <div className="p-6 space-y-3">
+                    <div className="h-6 w-1/2 animate-shimmer rounded"></div>
+                    <div className="h-4 w-5/6 animate-shimmer rounded"></div>
+                    <div className="flex items-center justify-between">
+                      <div className="h-8 w-28 animate-shimmer rounded"></div>
+                      <div className="h-10 w-32 animate-shimmer rounded"></div>
+                    </div>
+                  </div>
+                </div>
+              ))}
             </div>
           ) : (
             <>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-12">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8 mb-12">
                 {Array.isArray(services) && services.length > 0 ? (
                   services.map((service, index) => (
-                    <div key={service._id} className="bg-white rounded-3xl shadow-2xl overflow-hidden hover:shadow-3xl transition-all duration-300 transform hover:scale-105 hover-lift border-4 border-indigo-200 hover:border-indigo-500 animate-slideUp" style={{ animationDelay: `${index * 0.1}s` }}>
-                      <div className="relative w-full h-56 overflow-hidden group">
+                    <div key={service._id} className="bg-white rounded-3xl shadow-2xl overflow-hidden hover:shadow-3xl transition-all duration-300 transform hover:scale-105 border-2 border-indigo-200 hover:border-indigo-400 animate-slideUp" style={{ animationDelay: `${index * 0.1}s` }}>
+                      <div className="relative w-full h-64 overflow-hidden group">
                         {service.image ? (
                           <img 
                             src={service.image} 
                             alt={service.name} 
-                            className="w-full h-full object-cover transition-all duration-500 group-hover:scale-125" 
+                            className="w-full h-full object-cover transition-all duration-500 group-hover:scale-110" 
                             loading="lazy"
                             onError={(e) => {
                               // Fallback to gradient if image fails to load
@@ -136,22 +148,20 @@ export default function Services() {
                         >
                           <span className="text-8xl">🥪</span>
                         </div>
-                        {/* Badge */}
-                        <div className="absolute top-4 right-4 bg-gradient-to-r from-indigo-600 to-pink-600 text-white px-3 py-1 rounded-full text-sm font-black shadow-lg z-10">
-                          Fresh
-                        </div>
-                        {/* Category Badge */}
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent"></div>
                         {service.category && (
-                          <div className="absolute top-4 left-4 bg-white/90 backdrop-blur-sm text-gray-800 px-3 py-1 rounded-full text-xs font-black shadow-lg z-10">
-                            {service.category}
-                          </div>
+                          <div className="absolute top-4 left-4 bg-white/80 backdrop-blur-sm text-gray-800 px-3 py-1 rounded-full text-xs font-black shadow-lg z-10">{service.category}</div>
                         )}
+                        <div className="absolute bottom-4 left-4 bg-white/90 backdrop-blur-sm px-3 py-1 rounded-full text-sm font-black shadow-lg z-10">₹{service.price}</div>
+                        <div className="absolute top-4 right-4 flex items-center gap-1 bg-white/80 backdrop-blur-sm px-2 py-1 rounded-full text-xs font-black shadow-lg z-10">
+                          <span className="text-yellow-500">★</span>
+                          <span className="text-gray-800">4.8</span>
+                        </div>
                       </div>
                       <div className="p-6">
-                        <h3 className="text-2xl font-black mb-3 text-gray-800">{service.name}</h3>
-                        <p className="text-gray-600 mb-6 text-lg">{service.description}</p>
-                        <div className="flex items-center justify-between gap-4">
-                          <span className="text-3xl font-black bg-gradient-to-r from-indigo-600 to-pink-600 bg-clip-text text-transparent">₹{service.price}</span>
+                        <h3 className="text-2xl font-black mb-2 text-gray-800">{service.name}</h3>
+                        <p className="text-gray-600 mb-5">{service.description}</p>
+                        <div className="flex items-center justify-between gap-3">
                           <div className="flex items-center gap-2">
                             <button
                               onClick={() => decreaseQty(service._id)}
@@ -188,15 +198,15 @@ export default function Services() {
 
               {/* Cart Summary */}
               {cart.length > 0 && (
-                <div className="fixed bottom-0 left-0 right-0 bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 shadow-2xl border-t-4 border-white p-6 z-50">
-                  <div className="container mx-auto flex items-center justify-between">
-                    <div>
-                      <p className="font-black text-white text-lg">{cart.length} item(s) in cart</p>
-                      <p className="text-3xl font-black text-yellow-300">Total: ₹{totalAmount}</p>
+                <div className="fixed bottom-0 left-0 right-0 bg-white/90 backdrop-blur-md shadow-2xl border-t p-4 z-50">
+                  <div className="container mx-auto flex items-center justify-between gap-3">
+                    <div className="flex items-center gap-3">
+                      <span className="px-3 py-2 rounded-full bg-indigo-100 text-indigo-700 font-black">{cart.length} items</span>
+                      <span className="text-2xl font-black bg-gradient-to-r from-indigo-600 to-pink-600 bg-clip-text text-transparent">₹{totalAmount}</span>
                     </div>
                     <Link
                       href={`/order?items=${encodeURIComponent(JSON.stringify(cart))}`}
-                      className="bg-white text-indigo-600 px-10 py-4 rounded-2xl font-black text-lg hover:bg-gray-100 transition shadow-xl border-4 border-yellow-300"
+                      className="bg-gradient-to-r from-indigo-600 to-purple-600 text-white px-6 md:px-10 py-3 md:py-4 rounded-2xl font-black text-base md:text-lg hover:from-indigo-700 hover:to-purple-700 transition shadow-xl"
                     >
                       Proceed to Checkout →
                     </Link>

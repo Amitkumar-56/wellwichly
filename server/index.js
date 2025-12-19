@@ -124,7 +124,7 @@ app.use('/api/contacts', require('./routes/contacts'));
 app.use('/api/services', require('./routes/services'));
 app.use('/api/content', require('./routes/content'));
 
-const PORT = process.env.PORT || 5000;
+const PORT = process.env.PORT || 5001;
 app.listen(PORT, () => {
   console.log(`✅ Server running on port ${PORT}`);
   console.log(`🔐 Admin login: http://localhost:${PORT}/admin`);

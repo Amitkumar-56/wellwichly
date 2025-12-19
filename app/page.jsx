@@ -13,7 +13,7 @@ export default function Home() {
   useEffect(() => {
     const loadContent = async () => {
       try {
-        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5001'}/api/content`);
+    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5001'}/api/content`);
         if (res.ok) {
           const items = await res.json();
           const map = {};
@@ -27,6 +27,13 @@ export default function Home() {
     loadContent();
   }, []);
   const getContent = (key, fallback) => contentMap[key] || fallback;
+  const sliderImages = [
+    { url: getContent('home-slider-1', ''), alt: 'Sandwich' },
+    { url: getContent('home-slider-2', ''), alt: 'Sandwich' },
+    { url: getContent('home-slider-3', ''), alt: 'Sandwich' },
+    { url: getContent('home-slider-4', ''), alt: 'Sandwich' },
+    { url: getContent('home-slider-5', ''), alt: 'Sandwich' },
+  ].filter(i => i.url);
   return (
     <div className="min-h-screen flex flex-col bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50">
       <Header />
@@ -36,12 +43,12 @@ export default function Home() {
       <section className="relative min-h-[70vh] md:min-h-screen flex items-center justify-center overflow-hidden">
         {/* Image Slider Background */}
         <div className="absolute inset-0">
-          <ImageSlider />
+          <ImageSlider images={sliderImages} intervalMs={6000} />
         </div>
         
         {/* Content Overlay */}
         <div className="container mx-auto px-4 relative z-10 text-center">
-          <div className="text-7xl md:text-9xl mb-6 animate-bounce drop-shadow-2xl">🥪</div>
+          <div className="text-7xl md:text-9xl mb-6 drop-shadow-2xl animate-float">🥪</div>
           <h1 className="text-5xl md:text-9xl font-black text-white mb-4 tracking-tight drop-shadow-2xl font-['Poppins']">
             {getContent('home_welcome_title', 'Wellwichly')}
           </h1>
@@ -66,7 +73,7 @@ export default function Home() {
           </h2>
           <div className="mb-6">
             <span className="text-5xl md:text-8xl font-black bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 bg-clip-text text-transparent font-['Poppins']">
-              {getContent('home_cta_brand', 'Wellwichly')}
+              {getContent('home_cta_brand', 'Sandwich')}
             </span>
           </div>
           <h2 className="text-4xl md:text-7xl font-black mb-8 text-gray-800 leading-tight font-['Poppins']">
@@ -156,11 +163,11 @@ export default function Home() {
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-5 gap-6 mb-10">
             {[
-              { name: 'VEG GRILLED SANDWICH', image: '/Veg grilled sandwich.png', price: '₹60' },
-              { name: 'CHEESE CORN SANDWICH', image: '/Cheese corn sandwich.png', price: '₹80' },
-              { name: 'CHEESE PANEER SANDWICH', image: '/Cheese paneer sandwich.png', price: '₹90' },
-              { name: 'TANDOORI PANEER SANDWICH', image: '/tandoori paneer sandwich.png', price: '₹100' },
-              { name: 'ALOO GRILLED SANDWICH', image: '/Alloo grilled sandwich.png', price: '₹70' },
+              { name: 'VEG GRILLED SANDWICH', image: '/1.jpeg', price: '₹60' },
+              { name: 'CHEESE CORN SANDWICH', image: '/2.jpeg', price: '₹80' },
+              { name: 'CHEESE PANEER SANDWICH', image: '/3.jpeg', price: '₹90' },
+              { name: 'TANDOORI PANEER SANDWICH', image: '/4.jpeg', price: '₹100' },
+              { name: 'ALOO GRILLED SANDWICH', image: '/5.jpeg', price: '₹70' },
             ].map((item, index) => (
               <div key={index} className="bg-white rounded-3xl text-center hover:shadow-2xl transition-all duration-300 transform hover:scale-105 border-4 border-indigo-200 hover:border-indigo-500 overflow-hidden animate-slideUp" style={{ animationDelay: `${index * 0.1}s` }}>
                 <div className="w-full h-40 overflow-hidden">
